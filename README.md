@@ -1,2 +1,0 @@
-# BannerBee
-html banner builder
