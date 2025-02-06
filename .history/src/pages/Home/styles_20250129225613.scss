@@ -1,0 +1,13 @@
+.chat_form {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    input {
+        padding: 10px;
+    }
+    button {
+        margin: 10px;
+        display: inline;
+    }
+}

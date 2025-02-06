@@ -1,0 +1,16 @@
+.chat_form {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    textarea {
+        width: 100%;
+    }
+    input {
+        padding: 10px;
+    }
+    button {
+        margin: 10px;
+        display: inline;
+    }
+}

@@ -1,0 +1,27 @@
+.chat_form {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    textarea {
+        width: 100%;
+    }
+    input {
+        padding: 10px;
+    }
+    button {
+        margin: 10px;
+        display: inline;
+    }
+}
+.message {
+    padding: 10px 15px;
+    background: #742b8e;
+    span {
+        color: #fff;
+        font-size: 14px;
+    }
+    &.user_message {
+        background: #22297f;
+    }
+}
