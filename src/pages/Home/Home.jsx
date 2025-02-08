@@ -13,12 +13,17 @@ const  Home = () => {
     const [inputFiles, setInputFiles] = useState([]);
     const [fileInputsCount, setFileInputsCount] = useState(1);
     const [htmlPreviewFull, setHtmlPreviewFull] = useState(false);
-    const sessionName = 'session_'
+    const [sessionName, setSessionName] = useState('');
+    const [allUploadedFiles, setAllUploadedFiles] = useState([]);
 
-   
+    useEffect(()=> {
+        setSessionName(`session_${Date.now()}`);
+    }, [])
+    useEffect(()=> {
+        console.log(allUploadedFiles);
+    }, [allUploadedFiles])
     async function uploadFile(file) {
-        console.log(file)
-        // const sessionName = 'session_';
+
         const storageRef = ref(storage, `${sessionName}/${file.file.name}`);
       
         const response = await uploadBytes(storageRef, file.file);
@@ -46,20 +51,39 @@ const  Home = () => {
         console.log(fileRes);
         return fileRes; // list of urls from firebase
     }
+    function replaceHtmlUrls(html) {
+        const parser = new DOMParser();
+        for(let i=0;i<allUploadedFiles.length;i++) {
+            html = html.replaceAll(`${allUploadedFiles[i].url}`, `./${allUploadedFiles[i].file.name}`)
+        }
 
+        return html
+    }
+    function downloadHtml( html, mimeType) {
+        if(!html) {
+            return console.log("html is empty")
+        }
+        html = replaceHtmlUrls(html)
+        console.log(html)
+        var link = document.createElement('a');
+        mimeType = mimeType || 'text/plain';
+    
+        link.setAttribute('download', 'index.html');
+        link.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(html));
+        link.click(); 
+    }
+    function downloadImages( html, mimeType) {
+        if(!html) {
+            return console.log("html is empty")
+        }
+        var link = document.createElement('a');
+        mimeType = mimeType || 'text/plain';
+    
+        link.setAttribute('download', 'index.html');
+        link.setAttribute('href', 'link');
+        link.click(); 
+    }
 
-    //   async function uploadHtml(html) {
-
-    //     // Create file metadata including the content type
-    //     /** @type {any} */
-    //     const metadata = {
-    //     contentType: 'image/jpeg',
-    //     };
-
-    //     // Upload the file and metadata
-    //     const uploadTask = uploadBytes(ref(storage, 'images/mountains.jpg'), file, metadata);
-
-    //   }
     
     async function aiResponse() {
         const fileInputs = document.querySelector('.inputs_list').querySelectorAll('[type="file"]')
@@ -68,9 +92,10 @@ const  Home = () => {
         
         if(fileInputs && fileInputs[0].files[0]) {
             uploadedFiles = await uploadFiles();
-        }
 
-        console.log(uploadedFiles)
+        }
+        setAllUploadedFiles([...allUploadedFiles, ...uploadedFiles])
+
         let query = queryText;
 
         let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
@@ -105,7 +130,6 @@ const  Home = () => {
         } catch (error) {
             console.error("Error sending message:", error);
         }
-        
     }
     function reloadHtmlPreview() {
         document.getElementById('html_preview').contentWindow.location.reload();
@@ -156,7 +180,7 @@ const  Home = () => {
         const promise = new Promise((resolve, reject) => {
             img.onload = () => {
                 const width  = img.naturalWidth;
-                const height = img.naturalHeight; 
+                const height = img.naturalHeight;
 
                 resolve({width: width, height: height});
             };
@@ -220,7 +244,7 @@ const  Home = () => {
                 <div id="preview_wrap" className="preview_wrap">
                     <div className="html_preview_control">
                         <button onClick={()=>reloadHtmlPreview()}>Reload</button>
-                        <button>Download</button>
+                        <button onClick={()=> downloadHtml(modelResult.html, 'text/html')}>Download</button>
                         {
                             htmlPreviewFull ? 
                             <button className="close_preview_button" onClick={()=>fullScreeHtmlPreview()}>Smaller screen</button> :
