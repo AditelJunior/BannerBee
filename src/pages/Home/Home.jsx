@@ -2,7 +2,8 @@ import React, {useState, useEffect, useRef} from "react";
 import { model } from "../../gemini";
 import { storage } from "./../../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
+import JSZip from "jszip";
+import FileSaver, {saveAs} from "file-saver";
 import "./styles.scss";
 
 
@@ -15,12 +16,13 @@ const  Home = () => {
     const [htmlPreviewFull, setHtmlPreviewFull] = useState(false);
     const [sessionName, setSessionName] = useState('');
     const [allUploadedFiles, setAllUploadedFiles] = useState([]);
+    const [allUsedFiles, setAllUsedFiles] = useState([]);
 
     useEffect(()=> {
         setSessionName(`session_${Date.now()}`);
     }, [])
     useEffect(()=> {
-        console.log(allUploadedFiles);
+        // console.log(allUploadedFiles);
     }, [allUploadedFiles])
     async function uploadFile(file) {
 
@@ -48,40 +50,52 @@ const  Home = () => {
         // const filePromises = Array.from(filesArr, (item) => uploadFile(item));
 
         const fileRes = await Promise.all(Array.from(filesArr, (item) => uploadFile(item)));
-        console.log(fileRes);
+
         return fileRes; // list of urls from firebase
     }
     function replaceHtmlUrls(html) {
-        const parser = new DOMParser();
+        let imgsFromHtml = [];
         for(let i=0;i<allUploadedFiles.length;i++) {
-            html = html.replaceAll(`${allUploadedFiles[i].url}`, `./${allUploadedFiles[i].file.name}`)
+            if(html.includes(allUploadedFiles[i].url)) {
+                imgsFromHtml.push(allUploadedFiles[i]);
+                html = html.replaceAll(`${allUploadedFiles[i].url}`, `./images/${allUploadedFiles[i].file.name}`)
+            }
         }
-
-        return html
+        //setting only used images;
+        setAllUsedFiles(imgsFromHtml);
+        return html;
     }
-    function downloadHtml( html, mimeType) {
+    function downloadHtml( html) {
         if(!html) {
             return console.log("html is empty")
         }
         html = replaceHtmlUrls(html)
-        console.log(html)
-        var link = document.createElement('a');
-        mimeType = mimeType || 'text/plain';
-    
-        link.setAttribute('download', 'index.html');
-        link.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(html));
-        link.click(); 
-    }
-    function downloadImages( html, mimeType) {
-        if(!html) {
-            return console.log("html is empty")
+
+        const zip = new JSZip()
+        // in case if folder is needed
+        const folder = zip.folder('images')
+
+        if(allUsedFiles.length>0) {
+            allUsedFiles.forEach((file)=> {
+                const blobPromise = fetch(file.url).then(r => {
+                    if (r.status === 200) return r.blob()
+                    return Promise.reject(new Error(r.statusText))
+                })
+                const name = file.file.name;
+                folder.file(name, blobPromise)
+            })
         }
-        var link = document.createElement('a');
-        mimeType = mimeType || 'text/plain';
-    
-        link.setAttribute('download', 'index.html');
-        link.setAttribute('href', 'link');
-        link.click(); 
+        const htmlBlobPromise = fetch("data:text/html;charset=utf-8," + encodeURIComponent(html)).then(r => {
+            if (r.status === 200) return r.blob()
+            return Promise.reject(new Error(r.statusText))
+        })
+        zip.file('index.html', htmlBlobPromise)
+        zip.generateAsync({type:"blob"})
+            .then(blob => saveAs(blob, sessionName))
+            .catch(e => console.log(e));
+    }
+    async function createZipFile(html) {
+        
     }
 
     
@@ -184,12 +198,10 @@ const  Home = () => {
 
                 resolve({width: width, height: height});
             };
-
             // Reject promise on error
             img.onerror = reject;
         });
         // Setting the source makes it start downloading and eventually call `onload`
-
         img.src = window.URL.createObjectURL(e.files[0]);
         promise.then((value) => {
             e.setAttribute("data-image_width", value.width);
@@ -197,6 +209,7 @@ const  Home = () => {
         });
         return promise;
     }
+
     const InputRow = (i) => {
         return (
             <div className="inputs_row" key={'inputRow'+i}>
@@ -244,7 +257,7 @@ const  Home = () => {
                 <div id="preview_wrap" className="preview_wrap">
                     <div className="html_preview_control">
                         <button onClick={()=>reloadHtmlPreview()}>Reload</button>
-                        <button onClick={()=> downloadHtml(modelResult.html, 'text/html')}>Download</button>
+                        <button onClick={()=> downloadHtml(modelResult.html)}>Download</button>
                         {
                             htmlPreviewFull ? 
                             <button className="close_preview_button" onClick={()=>fullScreeHtmlPreview()}>Smaller screen</button> :
