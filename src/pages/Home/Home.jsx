@@ -94,10 +94,6 @@ const  Home = () => {
             .then(blob => saveAs(blob, sessionName))
             .catch(e => console.log(e));
     }
-    async function createZipFile(html) {
-        
-    }
-
     
     async function aiResponse() {
         const fileInputs = document.querySelector('.inputs_list').querySelectorAll('[type="file"]')
@@ -144,6 +140,7 @@ const  Home = () => {
         } catch (error) {
             console.error("Error sending message:", error);
         }
+        console.log(chatHistory)
     }
     function reloadHtmlPreview() {
         document.getElementById('html_preview').contentWindow.location.reload();
@@ -227,7 +224,7 @@ const  Home = () => {
         )
     }
   return (
-    <div>
+    <div id="home_page">
         <div className="container_home">
             <div className="left_side">
                 <div className="chat_form">
@@ -265,7 +262,7 @@ const  Home = () => {
                         }
                     </div>
                 
-                    <iframe srcDoc={modelResult.html} frameBorder="0" onload="this.style.height=(this.contentDocument.body.scrollHeight + 15) + 'px';'" id="html_preview"></iframe> 
+                    <iframe srcDoc={modelResult.html} frameBorder="0" id="html_preview"></iframe> 
                     
                 </div> : <span>HTML is not generated</span>
             }
