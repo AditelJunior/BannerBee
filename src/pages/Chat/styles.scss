@@ -156,13 +156,14 @@ html {
 }
 
 .header {
- height: 80px;
- width: 100%;
- border: 1px solid var(--border-color);
- display: flex;
- align-items: center;
- justify-content: space-between;
- padding: 10px 20px;
+    height: 80px;
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-bottom: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
 }
 
 .wrapper {
