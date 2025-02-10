@@ -13,6 +13,7 @@
 
 .history
 
+.firebase
 # misc
 .DS_Store
 .env
