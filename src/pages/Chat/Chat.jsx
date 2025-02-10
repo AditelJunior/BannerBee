@@ -14,7 +14,12 @@ const Chat = () => {
     const [modelResult, setModelResult] = useState({});
     const [queryText, setQueryText] = useState('');
     // const [chatMessages, setChatMessages] = useState([]);
-    const [chatHistory, setChatHistory] = useState([]);
+    const [chatHistory, setChatHistory] = useState([
+        { 
+            role: "model", 
+            parts: [{ text: "Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (wixdth X height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!"}] 
+        }
+    ]);
     const [inputFiles, setInputFiles] = useState([]);
     // const [fileInputsCount, setFileInputsCount] = useState(1);
     const [htmlPreviewFull, setHtmlPreviewFull] = useState(false);
@@ -24,8 +29,8 @@ const Chat = () => {
 
     const [iframeSize, setIframeSize] = useState({})
     
-
-    let chatRef = useRef(model.startChat({
+    // GEMINI CHAT
+    const chatRef = useRef(model.startChat({
         generationConfig: {
             maxOutputTokens: 3000,
         },
