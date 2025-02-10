@@ -38,7 +38,6 @@ const Chat = () => {
     }, [])
 
     async function uploadFiles(files) {
-        console.log('upload files')
         const fileRes = await Promise.all(Array.from(files, async (file) => {
             // uploadFile(item)
             const storageRef = ref(storage, `${sessionName}/${file.file.name}`);
@@ -68,7 +67,6 @@ const Chat = () => {
         let query = queryText;
 
         let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
-            console.log(file)
             return (
                 i + '-image\n' +
                 "name: " + file.file.name + '\n' +
@@ -85,7 +83,7 @@ const Chat = () => {
 
         let modelRes;
         try {
-            console.log(query)
+            // console.log(query)
             await chatRef.current.sendMessage(query).then((value)=> {
                 modelRes = formatAIText(value.response.text());
             });
@@ -105,15 +103,12 @@ const Chat = () => {
     }
     function replaceHtmlUrls(html) {
         let imgsFromHtml = [];
-        console.log(allUploadedFiles)
         for(let i=0;i<allUploadedFiles.length;i++) {
             if(html.includes(allUploadedFiles[i].url)) {
-                console.log(allUploadedFiles[i].url)
                 imgsFromHtml.push(allUploadedFiles[i]);
                 html = html.replaceAll(`${allUploadedFiles[i].url}`, `./images/${allUploadedFiles[i].file.name}`)
             }
         }
-        console.log(imgsFromHtml)
         //setting only used images;
         setAllUsedFiles(imgsFromHtml);
         return [html, imgsFromHtml];
@@ -124,11 +119,9 @@ const Chat = () => {
         }
 
         const [newHtml, imgsFromHtml] = replaceHtmlUrls(html)
-        // console.log(html)
         const zip = new JSZip()
         // in case if folder is needed
         const folder = zip.folder('images')
-        console.log(imgsFromHtml)
         if(imgsFromHtml.length>0) {
             imgsFromHtml.forEach((file)=> {
                 const blobPromise = fetch(file.url).then(r => {
@@ -150,7 +143,7 @@ const Chat = () => {
     }
     
     const formatAIText = (response) => {
-        console.log(response)
+        // console.log(response)
         // Regex to extract HTML code inside triple backticks
         const htmlRegex = /```html\n([\s\S]*?)```/;
         const match = response.match(htmlRegex);
@@ -252,7 +245,6 @@ const Chat = () => {
                 }
             }
             setInputFiles(filesArr);
-            console.log(filesArr)
         }
         let inputsQuantity = 8;
         return (
@@ -360,11 +352,11 @@ const Chat = () => {
                                 <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={()=>fullScreeHtmlPreview()}>Enter Full Screen</button>
                             }
                         </div>
+                        {!modelResult.html ? <span>HTML is not generated yet</span> : null}
                         <div className="iframe_wrap">
                             <iframe srcDoc={modelResult.html} frameBorder="0" id="html_preview" width={iframeSize.width} height={iframeSize.height}></iframe>
                         </div>
                     </div>
-                    //  : <span>HTML is not generated</span>
                 }
                 </div>
                 </div>

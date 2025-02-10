@@ -7,7 +7,7 @@
  --developer-color: #f9fafb;
  --input-bg: #f8f8fa;
  --input-chat-color: #a2a2a2;
- --border-color: #eef2f4;
+ --border-color: #273346;
  --body-font: "Manrope", sans-serif;
  --body-color: #273346;
  --settings-icon-color: #273346;
@@ -59,7 +59,7 @@
 .dark-mode {
  --body-bg-color: #1d1d1d;
  --theme-bg-color: #27292d;
- --border-color: #323336;
+ --border-color: #d1d1d2;
  --body-color: #d1d1d2;
  --active-conversation-bg: linear-gradient(
   to right,
@@ -161,7 +161,7 @@ html {
  border-bottom: 1px solid var(--border-color);
  display: flex;
  align-items: center;
- padding: 0 20px;
+ padding: 10px 20px;
 }
 
 .wrapper {
@@ -199,6 +199,9 @@ html {
             color: #fff;
             border-radius: 5px;
             margin-top: 10px;
+            &:disabled {
+                background: var(--settings-icon-hover);
+            }
         }
     }
     .iframe_wrap {
@@ -264,8 +267,11 @@ html {
 }
 
 .logo {
-    color: var(--body-color);
-    font-size: 20px;
+    h1 {
+        color: var(--body-color);
+        font-size: 35px;
+        margin: 0;
+    }
 }
 
 .user-settings {
