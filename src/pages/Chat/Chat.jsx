@@ -330,7 +330,7 @@ const Chat = () => {
                         chatHistory !== null ? chatHistory.map((message, id)=> {
                             return <div className={`chat-msg ${message.role}`} key={id}>
                                     <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank" className="chat-msg-profile">
-                                        <img className="chat-msg-img" src={message.role === 'user' ? MyImg : BeeImg} alt="me" />
+                                        <img className="chat-msg-img" src={message.role === 'user' ? MyImg : BeeImg} alt="avatar img" />
                                     </a>
                                     <div className="chat-msg-content">
                                         {
@@ -346,6 +346,18 @@ const Chat = () => {
                                     </div>
                                 </div>
                         }) : null
+                    }
+                    {
+                    // LOADER 
+                    disableSending ?
+                        <div className={`chat-msg model`}>
+                            <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank" className="chat-msg-profile">
+                                <img className="chat-msg-img" src={BeeImg} alt="bee img thinking" />
+                            </a>
+                            <div className="chat-msg-content">
+                                <p className="chat-msg-text">Generating...</p>   
+                            </div>
+                        </div> : null
                     }
                     <div ref={messagesEndRef} className="scroll_block" />
                 </div>
