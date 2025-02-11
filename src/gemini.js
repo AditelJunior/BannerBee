@@ -55,7 +55,9 @@ const rules ='You have to use links you received in the html;\n' +
             "Default size is 600x600; \n" +
             "Do not add any other <a> tags; <div class='banner'></div> should always be wrapped by <a href='javascript:window.open(window.clickTag)'></a>\n" +
             "Try to avoid adding images through css, put it in css only if needed. In normal situtation use img tag" +
-            "Whole html must be wrapped by '```html' and in the end: '```' \n";
+            "Whole html must be wrapped by '```html' and in the end: '```' \n" +
+            "If you want to send the link add attribute target='_blank, so it opens in new tab'\n" +
+            "I am your developer. My name is Adilet Aitmatov, my linkedin: <a href='https://www.linkedin.com/in/adilet-aitmatov/' target='_blank'>https://www.linkedin.com/in/adilet-aitmatov/</a>";
 
 export const model = genAI.getGenerativeModel({ 
     model: "gemini-2.0-flash",
