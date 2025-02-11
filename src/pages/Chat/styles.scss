@@ -216,10 +216,8 @@ html {
         min-height: 500px;
         height: 100%;
         margin-top: 40px;
-        
         #html_preview {
-            // width: fit-content;
-            // height: 100%;
+            background-color: #fff;
         }
     }
     #preview_wrap.html_preview_full_screen_active {
@@ -323,7 +321,31 @@ html {
   bottom: 19px;
  }
 }
+.user_msg_wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    position: relative;
+    .files_list {
+        font-size: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        width: 350px;
+        justify-content: end;
+        white-space: nowrap;
 
+        position: absolute;
+        top: 46px;
+        span {
+            display: inline;
+            max-width: 90px;
+            white-space: nowrap;
+	        overflow: hidden;
+            text-overflow: ellipsis;
+            margin-left: 10px;
+        }
+    }
+}
 .msg-username {
  margin-bottom: 4px;
  font-weight: 600;
@@ -338,13 +360,6 @@ html {
  font-weight: 500;
  font-size: 13px;
  display: flex;
-}
-
-.msg-message {
- white-space: nowrap;
- overflow: hidden;
- text-overflow: ellipsis;
- color: var(--msg-message);
 }
 
 .msg-date {
@@ -449,7 +464,7 @@ html {
   background-color: var(--theme-color);
   color: #fff;
   border-radius: 20px 20px 0 20px;
-  text-align: right;
+  text-align: left;
  }
  .chat-msg-date {
   left: auto;
@@ -477,6 +492,24 @@ html {
  position: sticky;
  bottom: 0;
  left: 0;
+ .attached_files_list {
+    font-size: 12px;
+    display: flex;
+    position: absolute;
+    top: -22px;
+    gap: 10px;
+    span {
+        background: var(--theme-bg-color);
+        border: 1px var(--border-color) solid;
+        display: block;
+        border-radius: 10px;
+        padding: 0px 10px;
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+ }
  .button_send_files {
     display: flex;
     align-items: center;

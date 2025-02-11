@@ -9,7 +9,8 @@ const template = `<!DOCTYPE html>
 
     <title>&&TITLE&&</title>
     <meta name="ad.size" content="width=&&WIDTH_OF_THE_BANNER&&,height=&&HEIGHT_OF_THE_BANNER&&">
-    <styles>
+    <style id="ai_styles">
+        /* AI GENERATED CSS */
         html,body {
             margin: 0;
             padding: 0;
@@ -20,8 +21,7 @@ const template = `<!DOCTYPE html>
             position: relative;
             iverflow: hidden;
         }
-    // &&AI GENERATED CODE&&
-    </styles>
+    </style>
     <script type="text/javascript">
         var clickTag = "http://www.google.com";
     </script>
@@ -29,27 +29,35 @@ const template = `<!DOCTYPE html>
 <body>
 <a href="javascript:window.open(window.clickTag)">
     <div class="banner">
-        // &&GENERATED STRUCTURE&&
+        <!-- GENERATED STRUCTURE -->
     </div>
 </a>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script type="text/javascript">
-// &&AI GENERATED JS CODE&&
+<script type="text/javascript" id="ai_javascript">
+// AI GENERATED JS CODE
 </script>
 </body>
 </html>`
 
-const rules = 'Always write your code in the template!;\n' + 
-            'Your must return html template filled with css styles and js scripts;\n' + 
-            "Put your code in special places marked with '&&':  write your js here: &&AI GENERATED JS CODE&&; write your css styles here: &&AI GENERATED CODE&&; write your html here: &&GENERATED STRUCTURE&&; replace this text '&&WIDTH_OF_THE_BANNER&&' with width of the banner user requesting; replace this text '&&HEIGHT_OF_THE_BANNER&&' with height of the banner user requesting, if sizes are not set you can write width = 600 and height = 600."+
-            'You have to use links you received in the html;\n' +
-            'For images always use img tag dont use images in css;\n' +
-            'If the user sends background image(shortly - bg) always put it behind everything and dont animate it unless user asks to animate its disappearance;\n' +
-            'If the user sends Call to Action (shortly - CTA) after its apearence animation it should stay on stage, unless user asks to animate its disappearance;\n' +
-            "Your must return html and write all css styles and js scripts inside. Whole html must be wrapped by '```html' and in the end: '```' ." +
-            ''
+const rules ='You have to use links you received in the html;\n' +
+            "Use images provided by user. Dont look for images by yourself. If you need an image placeholder create html shape and add text: 'placeholder' to it;\n" +
+            "If user asked to animate the image he never sent, you can ask him to do it in the file input field;\n " +
+            // 'For images always use img tag dont use images in css;\n' +
+            "If the user sends background image(shortly - bg) always put it behind everything and dont animate it unless user asks to animate its disappearance; \n" +
+            "If the user sends Call to Action (shortly - CTA) after its apearence animation, it should stay on stage, unless user asks to animate its disappearance; \n" +
+            "Always write code in the template! \n" +  
+            "Never write code outside of the template! \n" +  
+            "Put the code in highlighted places: Write your js in <script id='ai_javascript'>: // AI GENERATED JS CODE; \n" +
+            "Write your CSS styles in <styles id='ai_styles'>: /* AI GENERATED CSS */; \n" + 
+            "Write your HTML in class='banner': <!-- GENERATED STRUCTURE -->; \n" + 
+            "Replace this text '&&WIDTH_OF_THE_BANNER&&' with width of the banner user requesting; \n" + 
+            "Replace this text '&&HEIGHT_OF_THE_BANNER&&' with height of the banner user requesting; \n" +
+            "Default size is 600x600; \n" +
+            "Do not add any other <a> tags; <div class='banner'></div> should always be wrapped by <a href='javascript:window.open(window.clickTag)'></a>\n" +
+            "Try to avoid adding images through css, put it in css only if needed. In normal situtation use img tag" +
+            "Whole html must be wrapped by '```html' and in the end: '```' \n";
 
 export const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     systemInstruction: "Your Name is BannerBee, you are html banner generator. Your tools are: HTML, CSS, JS and GSAP. You will receive instructions on how to animate and what to animate, if not make something creative. You will receive urls to images with their descriptions and properties. Rules:\n"+ rules +" Here is a template you are going to use: \n" + template 
  });

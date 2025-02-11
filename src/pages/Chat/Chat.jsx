@@ -14,25 +14,23 @@ const Chat = () => {
     const [modelResult, setModelResult] = useState({});
     const [queryText, setQueryText] = useState('');
     // const [chatMessages, setChatMessages] = useState([]);
-    const [chatHistory, setChatHistory] = useState([
-        { 
-            role: "model", 
-            parts: [{ text: "Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (wixdth X height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!"}] 
-        }
-    ]);
     const [inputFiles, setInputFiles] = useState([]);
     // const [fileInputsCount, setFileInputsCount] = useState(1);
     const [htmlPreviewFull, setHtmlPreviewFull] = useState(false);
     const [allUploadedFiles, setAllUploadedFiles] = useState([]);
     const [allUsedFiles, setAllUsedFiles] = useState([]);
     const [inputsModalOpen, setInputsModalOpen] = useState(false);
-
     const [iframeSize, setIframeSize] = useState({})
-    
+    const [chatHistory, setChatHistory] = useState([
+        { 
+            role: "model", 
+            parts: [{ text: "Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (Width X Height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!"}] 
+        }
+    ]);
     // GEMINI CHAT
     const chatRef = useRef(model.startChat({
         generationConfig: {
-            maxOutputTokens: 3000,
+            maxOutputTokens: 4000,
         },
     }));
 
@@ -55,9 +53,12 @@ const Chat = () => {
         return fileRes; // list of urls from firebase
     }
     async function aiResponse() {
+        if(queryText.trim().length === 0 && inputFiles.length === 0) {
+            return alert('Please provide instructions for animations or attach files for BannerBee.')
+        }
         setChatHistory((prev)=> [
             ...prev,
-            { role: "user", parts: [{ text: queryText }] },
+            { role: "user", parts: [{ text: queryText.trim(), files: inputFiles}] },
         ]);
 
         let uploadedFiles = [];
@@ -68,7 +69,9 @@ const Chat = () => {
             setInputFiles([])
         }
 
-        let query = queryText;
+        let query = queryText.trim();
+        document.getElementById('user_input').value = '';
+        setQueryText('')
 
         let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
             return (
@@ -99,7 +102,7 @@ const Chat = () => {
             setChatHistory((prev)=> [
                 ...prev,
                 // { role: "user", parts: [{ text: query }] },
-                { role: "model", parts: [{ text: (modelRes.text ? modelRes.text : 'Here is your Banner: ')}] }
+                { role: "model", parts: [{ text: (modelRes.text ? modelRes.text : 'Banner is ready, it is in the preview section: ')}] }
             ]);
             scrollToBottom();
         }
@@ -149,7 +152,6 @@ const Chat = () => {
         // Regex to extract HTML code inside triple backticks
         const htmlRegex = /```html\n([\s\S]*?)```/;
         const match = response.match(htmlRegex);
-      
         // Extract HTML and remove it from the response text
         let htmlPart = match ? match[1] : "";
         let textPart = response.replace(htmlRegex, "").trim();
@@ -165,12 +167,13 @@ const Chat = () => {
 
           // Wrap <li> items inside a <ul> if there are any
         if (textPart.includes("<li>")) {
-        textPart = `<ul>${textPart}</ul>`;
+            textPart = `<ul>${textPart}</ul>`;
         }
 
         if(!htmlPart && modelResult.html) {
             htmlPart = modelResult.html
         }
+
         getAdSize(htmlPart)
         return { text: textPart, html: htmlPart  };
     }
@@ -227,12 +230,12 @@ const Chat = () => {
                 height: 400
             })
         }
-        
     }
 
     function scrollToBottom () {
-        messagesEndRef.current.scrollIntoView({ behavior: 'instant', block: "end"})
+        // messagesEndRef.current.scrollIntoView({ behavior: 'instant', block: "end"})
     }
+
     const ModalWithInputs = () => {
         function saveFilesInState() {
             const modalInputs = document.getElementById('modalInputs');
@@ -246,7 +249,7 @@ const Chat = () => {
                     filesArr.push({ file: fileInputs[i].files[0], description: fileDescs[i].value, size: {width: fileInputs[i].getAttribute('data-image_width'), height: fileInputs[i].getAttribute('data-image_height')}})
                 }
             }
-            setInputFiles(filesArr);
+            setInputFiles([...inputFiles, ...filesArr]);
         }
         
         let inputsQuantity = 8;
@@ -275,6 +278,7 @@ const Chat = () => {
             </div>
         )
     }
+
     function openMobilePreview () {
         const container = document.getElementById('preview_container');
         container.classList.toggle('active')
@@ -293,7 +297,6 @@ const Chat = () => {
                             <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
                         </div>
                         <div className="settings">
-                            
                             <button className={`open_html_preview button_no_style`}  onClick={()=>{openMobilePreview()}}>
                                 <img src={EyeImg } alt="html preview"/>
                             </button>
@@ -309,12 +312,18 @@ const Chat = () => {
                                     <div className="chat-msg-profile">
                                     
                                         <img className="chat-msg-img" src={message.role === 'user' ? MyImg : BeeImg} alt="me" />
-                                        {/* <div className="chat-msg-date">Message seen 2.50pm</div> */}
                                     </div>
                                     <div className="chat-msg-content">
                                         {
                                             message.role === 'user' ?
-                                            <p className="chat-msg-text">{message.parts[0].text}</p> :
+                                            <div className="user_msg_wrap"><p className="chat-msg-text">{message.parts[0].text}</p> 
+                                                {message.parts[0].files ?
+                                                    <span className="files_list">{message.parts[0].files.map((file, id) => {
+                                                        if(id<6) {
+                                                            return <span key={id}>{file.file.name}</span>
+                                                        }
+                                                    })}</span> : null}
+                                            </div> :
                                             <p className="chat-msg-text" dangerouslySetInnerHTML={{ __html: message.parts[0].text }}></p>   
                                         }
                                     </div>
@@ -324,13 +333,16 @@ const Chat = () => {
                     <div ref={messagesEndRef} className="scroll_block" />
                 </div>
                 <div className="chat-area-footer">
+                    <span className="attached_files_list">{inputFiles.map((file, id)=> {
+                        return <span key={id}>{file.file.name}</span>
+                    })}</span>
                     <button className="button_no_style button_send_files" onClick={()=>{setInputsModalOpen(true)}}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="feather feather-paperclip">
                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
                     </button>
                     
                     
-                    <textarea type="text" id="user-input" placeholder="Type your request here..." onChange={(e)=> {
+                    <textarea type="text" id="user_input" placeholder="Type your request here..." onChange={(e)=> {
                         e.target.style.height = 59+'px';
                         e.target.style.height = e.target.scrollHeight + 'px';
                         setQueryText(e.target.value);}}/>
@@ -341,20 +353,20 @@ const Chat = () => {
                 </div>
                 <div className="detail-area" id="preview_container">
                 {
-                    // modelResult.html ? 
-                    <div id="preview_wrap">
+                    // htmlPreviewFull
+                    <div id="preview_wrap" onClick={(e)=> htmlPreviewFull ? fullScreeHtmlPreview() : null }>
                         <div className="html_preview_control">
-                            <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={()=>reloadHtmlPreview()}>Reload</button>
-                            <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={()=> downloadHtml(modelResult.html)}>Download</button>
+                            <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={(e)=>{e.stopPropagation(); reloadHtmlPreview()}}>Reload</button>
+                            <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={(e)=>{e.stopPropagation(); downloadHtml(modelResult.html)}}>Download</button>
                             {
                                 htmlPreviewFull ? 
-                                <button className="preview_control_button button_no_style " disabled={modelResult.html ? false : true} onClick={()=>fullScreeHtmlPreview()}>Exit Full Screen</button> :
-                                <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={()=>fullScreeHtmlPreview()}>Enter Full Screen</button>
+                                <button className="preview_control_button button_no_style " disabled={modelResult.html ? false : true} onClick={(e)=>{e.stopPropagation(); fullScreeHtmlPreview()}}>Exit Full Screen</button> :
+                                <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={(e)=>{e.stopPropagation(); fullScreeHtmlPreview()}}>Enter Full Screen</button>
                             }
                         </div>
                         {!modelResult.html ? <span>HTML is not generated yet</span> : null}
                         <div className="iframe_wrap">
-                            <iframe srcDoc={modelResult.html} frameBorder="0" id="html_preview" width={iframeSize.width} height={iframeSize.height}></iframe>
+                            <iframe onClick={(e)=> e.preventDefault()} srcDoc={modelResult.html} frameBorder="0" id="html_preview" width={iframeSize.width} height={iframeSize.height}></iframe>
                         </div>
                     </div>
                 }
