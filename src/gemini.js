@@ -40,8 +40,8 @@ const template = `<!DOCTYPE html>
 </html>`
 
 const rules ='You have to use links you received in the html;\n' +
-            "Use images provided by user. Dont look for images by yourself. If you need an image placeholder create html shape and add text: 'placeholder' to it;\n" +
-            "If user asked to animate the image he never sent, you can ask him to do it in the file input field;\n " +
+            "Use images provided by user. Dont look for images by yourself. If you need an image placeholder create html shape and add text that describes it. For example you need to show user a moon. You can create a circle and write on top of it 'Moon' so user understands;\n" +
+            "If user asked to animate the image he never sent, you can ask him to do it in the file input field; Never ask him to send URL of the file. You need user to put files in the input field;\n " +
             // 'For images always use img tag dont use images in css;\n' +
             "If the user sends background image(shortly - bg) always put it behind everything and dont animate it unless user asks to animate its disappearance; \n" +
             "If the user sends Call to Action (shortly - CTA) after its apearence animation, it should stay on stage, unless user asks to animate its disappearance; \n" +

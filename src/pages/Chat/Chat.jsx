@@ -7,6 +7,7 @@ import FileSaver, {saveAs} from "file-saver";
 
 import MyImg from './../../images/me.jpeg';
 import BeeImg from './../../images/bee.jpg';
+import BinImg from './../../images/bin.png';
 import EyeImg from './../../images/eye.png';
 import HoneyBeeImg from './../../images/honeybee.png';
 import "./styles.scss";
@@ -25,19 +26,23 @@ const Chat = () => {
     const [disableSending, setDisableSending] = useState(false)
     const [chatHistory, setChatHistory] = useState([
         { 
+            role: "user", 
+            parts: [{ text: "Hello!"}] 
+        },
+        { 
             role: "model", 
             parts: [{ text: "Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (Width X Height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!"}] 
-        }
+        },
     ]);
+
     // GEMINI CHAT
     const chatRef = useRef(model.startChat({
+        history: [...chatHistory],
         generationConfig: {
             maxOutputTokens: 4000,
         },
     }));
-
-    const sessionName = useRef(`session_${Date.now()}`);
-
+    const sessionName = useRef(`session_${Date.now()}-${Math.round(Math.random()*100)}`);
     const messagesEndRef = useRef();
 
 
@@ -111,6 +116,7 @@ const Chat = () => {
             ]);
             scrollToBottom();
         }
+
         //allow user to send next message
         setDisableSending(false)
     }
@@ -290,7 +296,11 @@ const Chat = () => {
         const container = document.getElementById('preview_container');
         container.classList.toggle('active')
     }
-    
+    // function clearChat () {
+    //     localStorage.clear();
+    //     setChatHistory([])
+        
+    // }
     return (
         <div>
             <div className="app">
@@ -299,6 +309,9 @@ const Chat = () => {
                         <h1>BannerBee<img src={HoneyBeeImg} alt="bee img"/></h1>
                     </div>
                     <div className="user-settings">
+                        {/* <button className={`clear_chat button_no_style`}  onClick={()=>{clearChat()}}>
+                            <img src={BinImg} alt="trash bin"/>
+                        </button> */}
                         <div className="dark-light" onClick={() => document.body.classList.toggle('dark-mode')}>
                             <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
