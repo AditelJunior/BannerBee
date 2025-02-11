@@ -8,6 +8,7 @@ import FileSaver, {saveAs} from "file-saver";
 import MyImg from './../../images/me.jpeg';
 import BeeImg from './../../images/bee.jpg';
 import EyeImg from './../../images/eye.png';
+import HoneyBeeImg from './../../images/honeybee.png';
 import "./styles.scss";
 
 const Chat = () => {
@@ -21,6 +22,7 @@ const Chat = () => {
     const [allUsedFiles, setAllUsedFiles] = useState([]);
     const [inputsModalOpen, setInputsModalOpen] = useState(false);
     const [iframeSize, setIframeSize] = useState({})
+    const [disableSending, setDisableSending] = useState(false)
     const [chatHistory, setChatHistory] = useState([
         { 
             role: "model", 
@@ -53,12 +55,17 @@ const Chat = () => {
         return fileRes; // list of urls from firebase
     }
     async function aiResponse() {
-        if(queryText.trim().length === 0 && inputFiles.length === 0) {
-            return alert('Please provide instructions for animations or attach files for BannerBee.')
+        let query = queryText.trim();
+        document.getElementById('user_input').value = '';
+        setQueryText('')
+        setDisableSending(true)
+
+        if(query.length === 0 && inputFiles.length === 0) {
+            return alert('Please provide instructions for banner animation or attach files for BannerBee.')
         }
         setChatHistory((prev)=> [
             ...prev,
-            { role: "user", parts: [{ text: queryText.trim(), files: inputFiles}] },
+            { role: "user", parts: [{ text: query, files: inputFiles}] },
         ]);
 
         let uploadedFiles = [];
@@ -69,9 +76,7 @@ const Chat = () => {
             setInputFiles([])
         }
 
-        let query = queryText.trim();
-        document.getElementById('user_input').value = '';
-        setQueryText('')
+        
 
         let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
             return (
@@ -106,6 +111,8 @@ const Chat = () => {
             ]);
             scrollToBottom();
         }
+        //allow user to send next message
+        setDisableSending(false)
     }
     function replaceHtmlUrls(html) {
         let imgsFromHtml = [];
@@ -262,7 +269,7 @@ const Chat = () => {
                             <div className="inputs_row" key={i}>
                                 <div className="input_wrap">
                                     {/* <label htmlFor={'fileInput-' + i}></label> */}
-                                    <input type="file" accept="image/png, image/jpeg, image/gif" onChange={(e)=>checkImageSize(e.target)}/>
+                                    <input type="file" accept="image/png, image/jpeg, image/gif, image/svg+xml" onChange={(e)=>checkImageSize(e.target)}/>
                                     <button className="clear_input_button button_no_style" onClick={(e)=>{e.target.parentElement.querySelector("[type=file]").value = ''}}>✕</button>
                                 </div>
                                 
@@ -289,7 +296,7 @@ const Chat = () => {
             <div className="app">
                 <div className="header">
                     <div className="logo">
-                        <h1>BannerBee <span>🐝</span></h1>
+                        <h1>BannerBee<img src={HoneyBeeImg} alt="bee img"/></h1>
                     </div>
                     <div className="user-settings">
                         <div className="dark-light" onClick={() => document.body.classList.toggle('dark-mode')}>
@@ -309,20 +316,17 @@ const Chat = () => {
                     {
                         chatHistory !== null ? chatHistory.map((message, id)=> {
                             return <div className={`chat-msg ${message.role}`} key={id}>
-                                    <div className="chat-msg-profile">
-                                    
+                                    <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank" className="chat-msg-profile">
                                         <img className="chat-msg-img" src={message.role === 'user' ? MyImg : BeeImg} alt="me" />
-                                    </div>
+                                    </a>
                                     <div className="chat-msg-content">
                                         {
                                             message.role === 'user' ?
                                             <div className="user_msg_wrap"><p className="chat-msg-text">{message.parts[0].text}</p> 
                                                 {message.parts[0].files ?
                                                     <span className="files_list">{message.parts[0].files.map((file, id) => {
-                                                        if(id<6) {
                                                             return <span key={id}>{file.file.name}</span>
-                                                        }
-                                                    })}</span> : null}
+                                                })}</span> : null}
                                             </div> :
                                             <p className="chat-msg-text" dangerouslySetInnerHTML={{ __html: message.parts[0].text }}></p>   
                                         }
@@ -347,13 +351,12 @@ const Chat = () => {
                         e.target.style.height = e.target.scrollHeight + 'px';
                         setQueryText(e.target.value);}}/>
                     
-                    <button className="button_no_style send_button" onClick={()=> aiResponse()}><span>➤</span></button>
-                    <span className="developed_by">Developed by: Adilet Aitmatov</span>
+                    <button disabled={disableSending} className="button_no_style send_button" onClick={()=> aiResponse()}><span>➤</span></button>
+                    <span className="developed_by">Developed by: <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank">Adilet Aitmatov</a></span>
                 </div>
                 </div>
                 <div className="detail-area" id="preview_container">
                 {
-                    // htmlPreviewFull
                     <div id="preview_wrap" onClick={(e)=> htmlPreviewFull ? fullScreeHtmlPreview() : null }>
                         <div className="html_preview_control">
                             <button className="preview_control_button button_no_style" disabled={modelResult.html ? false : true} onClick={(e)=>{e.stopPropagation(); reloadHtmlPreview()}}>Reload</button>
