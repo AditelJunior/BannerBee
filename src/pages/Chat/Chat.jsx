@@ -38,6 +38,7 @@ const Chat = () => {
     // GEMINI CHAT
     const chatRef = useRef(model.startChat({
         history: [...chatHistory],
+        temperature: 2.0,
         generationConfig: {
             maxOutputTokens: 4000,
         },
@@ -61,7 +62,10 @@ const Chat = () => {
     }
     async function aiResponse() {
         let query = queryText.trim();
-        document.getElementById('user_input').value = '';
+        const userInput = document.getElementById('user_input');
+        userInput.value = '';
+        userInput.style.height = 59+'px';
+        userInput.style.height = userInput.scrollHeight + 'px';
         setQueryText('')
         setDisableSending(true)
 

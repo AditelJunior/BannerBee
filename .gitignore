@@ -27,3 +27,4 @@ yarn-debug.log*
 yarn-error.log*
 
 cors.json
+html_builder.code-workspace
