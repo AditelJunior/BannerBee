@@ -11,7 +11,6 @@ return (
      <Router>
         <Routes>
           <Route path="/" element={<HomeProvider><Home /></HomeProvider>} />
-          {/* <Route path="/" element={<Chat />} /> */}
         </Routes>
       </Router>
     </div>
