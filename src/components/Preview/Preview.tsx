@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-// import { storage } from "../../firebase";
-// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-
 import { File } from "../../../types/types";
+import './styles.scss';
 
 type BannerSize = {
     width?: number,
@@ -19,7 +17,7 @@ interface PreviewProps {
 
 const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
     const [htmlPreviewFull, setHtmlPreviewFull] = useState<boolean>(false);
-    const [iframeSize, setIframeSize] = useState<BannerSize>({width: 600, height: 600})
+    const [iframeSize, setIframeSize] = useState<BannerSize>({width: 0, height: 0})
 
     useEffect(() => {
         if(html) {

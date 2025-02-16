@@ -12,7 +12,6 @@ import { ChatItem, File } from "../../../types/types";
 import { RootState } from "../../state/store";
 import { useHomeContext } from '../../context/HomeContext';
 
-
 import BeeImg from './../../images/bee.jpg';
 import EyeImg from './../../images/eye.png';
 import HoneyBeeImg from './../../images/honeybee.png';
@@ -35,14 +34,22 @@ const Home = () => {
          parts: [{ text: "Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (Width X Height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!"}] 
       },
    ]);
-
+   useEffect(() => {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+         // document.body.classList.remove('dark-light');
+         document.body.classList.add('dark-mode');
+     }
+   }, []);
+   function changeColorMode() {
+      document.body.classList.toggle('dark-mode');
+   }
    const chatRef = useRef(model.startChat({
             //   history: [...chatHistory],
               generationConfig: {
                   temperature: 2.0,
                   maxOutputTokens: 4000,
               },
-          }));
+   }));
    const sessionName = useRef<string>(`session_${Date.now()}-${Math.round(Math.random()*100)}`);
    const messagesEndRef = useRef(null);
 
@@ -66,70 +73,71 @@ const Home = () => {
       return fileRes; // list of urls from firebase
    }
    
-      async function aiResponse() {
-         let query:string = queryText.trim();
-         const userInput: any = document.getElementById('user_input');
+   async function aiResponse() {
+      let query:string = queryText.trim();
+      const userInput: any = document.getElementById('user_input');
 
-         userInput.value = '';
-         userInput.style.height = 59+'px';
-         userInput.style.height = userInput.scrollHeight + 'px';
-        
-        setQueryText('');
-        setDisableSending(true);
-
-        if(query.length === 0 && inputFiles.length === 0) {
-            return alert('Please provide instructions for banner animation or attach files for BannerBee.');
-        }
-        setChatHistory((prev:ChatItem[])=> [
-            ...prev,
-            { role: "user", parts: [{ text: query, files: inputFiles}] },
-        ]);
-
-        let uploadedFiles: File[] = [];
-        
-        if(inputFiles.length > 0) {
-            uploadedFiles = await uploadFiles(inputFiles);
-            setAllUploadedFiles([...allUploadedFiles, ...uploadedFiles])
-            setInputFiles([]);
-            dispatch({type: 'files/clearFiles'})
-        }
-
-        let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
-            return (
-                i + '-image\n' +
-                "name: " + file.file.name + '\n' +
-                "description: " + file.description + '\n' +
-                "width: " + file.size.width + '\n' +
-                "height: " + file.size.height + '\n' +
-                "url: " + file.url + '\n'
-            )
-        });
-
-        if(uploadedFiles.length>0) {
-            query = query + instructionForImages;
-        }
-     
-        let modelRes: { text?: string, html?: string };
-        try {
-            await chatRef.current.sendMessage(query).then((value:any)=> {
-                modelRes = formatAIText(value.response.text());
-                if(modelRes && (modelRes.text || modelRes.html)) {
-                  setModelResult(modelRes);
+      userInput.value = '';
+      userInput.style.height = 59+'px';
+      userInput.style.height = userInput.scrollHeight + 'px';
       
-                  setChatHistory((prev:ChatItem[])=> [
-                      ...prev,
-                      // { role: "user", parts: [{ text: query }] },
-                      { role: "model", parts: [{ text: (modelRes.text ? modelRes.text : 'Banner is ready, it is in the preview section: ')}] }
-                  ]);
-                  scrollToBottom();
-              }
-            });
-        } catch (error) {
-            alert("Error occured while generating banner. Please try again.");
-            console.error("Error sending message:", error);
-        }
-        //allow user to send next message
-        setDisableSending(false)
+      setQueryText('');
+      setDisableSending(true);
+
+      if(query.length === 0 && inputFiles.length === 0) {
+         return alert('Please provide instructions for banner animation or attach files for BannerBee.');
+      }
+      setChatHistory((prev:ChatItem[])=> [
+         ...prev,
+         { role: "user", parts: [{ text: query, files: inputFiles}] },
+      ]);
+
+      let uploadedFiles: File[] = [];
+      
+      if(inputFiles.length > 0) {
+         uploadedFiles = await uploadFiles(inputFiles);
+         // setAllUploadedFiles([...allUploadedFiles, ...uploadedFiles])
+         setAllUploadedFiles([...uploadedFiles])
+         setInputFiles([]);
+         dispatch({type: 'files/clearFiles'})
+      }
+
+      let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
+         return (
+               i + '-image\n' +
+               "name: " + file.file.name + '\n' +
+               "description: " + file.description + '\n' +
+               "width: " + file.size.width + '\n' +
+               "height: " + file.size.height + '\n' +
+               "url: " + file.url + '\n'
+         )
+      });
+
+      if(uploadedFiles.length>0) {
+         query = query + instructionForImages;
+      }
+   
+      let modelRes: { text?: string, html?: string };
+      try {
+         await chatRef.current.sendMessage(query).then((value:any)=> {
+               modelRes = formatAIText(value.response.text());
+               if(modelRes && (modelRes.text || modelRes.html)) {
+               setModelResult(modelRes);
+   
+               setChatHistory((prev:ChatItem[])=> [
+                     ...prev,
+                     // { role: "user", parts: [{ text: query }] },
+                     { role: "model", parts: [{ text: (modelRes.text ? modelRes.text : 'Banner is ready, it is in the preview section: ')}] }
+               ]);
+               scrollToBottom();
+            }
+         });
+      } catch (error) {
+         alert("Error occured while generating banner. Please try again.");
+         console.error("Error sending message:", error);
+      }
+      //allow user to send next message
+      setDisableSending(false)
    }
 
    function formatAIText(response:string) {
@@ -175,7 +183,7 @@ const Home = () => {
                   <h1>BannerBee<img src={HoneyBeeImg} alt="bee img"/></h1>
                </div>
                <div className="user-settings">
-                  <div className="dark-light" onClick={() => document.body.classList.toggle('dark-mode')}>
+                  <div className="dark-light" onClick={() => changeColorMode()}>
                         <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
                   </div>
@@ -227,9 +235,9 @@ const Home = () => {
                   </div>
                </div>
                <div className="detail-area" id="preview_container">
-               {
-                  <Preview html={modelResult.html} sessionName={sessionName.current} allUploadedFiles={allUploadedFiles}/>
-               }
+                  {
+                     <Preview html={modelResult.html} sessionName={sessionName.current} allUploadedFiles={allUploadedFiles}/>
+                  }
                </div>
             </div>
          </div>

@@ -1,0 +1,132 @@
+.modal {
+    display: none;
+    position: absolute;
+    top: 30px;
+    left: 10%;
+    z-index: 999;
+    background: var(--input-bg);
+    box-shadow: 0px 0px 100px rgba(#000000, 0.5);
+    border: 1px solid lightgray;
+    width: 80%;
+    padding: 50px 50px 50px 50px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    &.modal_open {
+        display: block;
+    }
+    .input_wrap {
+        display: flex;
+        justify-content: center;
+    }
+    .close_modal {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 20px;
+        line-height: 15px;
+        padding: 10px;
+        background: transparent;
+        color: var(--body-color)
+    }
+    .submit_input_files {
+        margin-top: 20px;
+        padding: 8px 15px;
+        border-radius: 5px;
+        background: var(--theme-color);
+        font-size: 15px;
+        color: #fff;
+    }
+    .clear_input_button {
+        font-size: 30px;
+        color: var(--body-color);
+        margin-left: 20px;
+    }
+}
+#files_input {
+    display: block;
+    position: relative;
+    width: 300px;
+    cursor: pointer;
+    border: 0;
+    height: 60px;
+    border-radius: 5px;
+    outline: 0;
+}
+#files_input:hover:after {
+    background: var(--theme-color);
+    // background: #5978f8;
+}
+#files_input:after {
+    transition: 200ms all ease;
+    border-bottom: 3px solid rgba(0,0,0,.2);
+    background: var(--theme-color);
+    text-shadow: 0 2px 0 rgba(0,0,0,.2);
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    content: 'Upload Files';
+    line-height: 60px;
+    border-radius: 5px;
+}
+
+.desc_wrap {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    flex: 2;
+    gap: 20px;
+    margin-top: 20px;
+    .desc_row {
+        width: calc(50% - 10px);
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+        label {
+            font-size: 16px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 7px;
+            border: 1px solid var(--body-color);
+            background-color: var(--input-bg);
+            border-radius: 6px;
+            color: var(--body-color);
+            border-radius: 5px;
+            outline: 0;
+            font-size: 16px;
+        }
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .modal {
+        padding: 30px;
+        #files_input {
+            width: 150px;
+            height: 40px;
+            &:after {
+                font-size: 16px;
+                line-height: 40px;
+            }
+        }
+        .desc_wrap {
+            .desc_row {
+                width: 100%;
+            }
+        }
+        .clear_input_button {
+            font-size: 25px;
+            color: var(--body-color);
+            margin-left: 10px;
+        }
+    }
+}

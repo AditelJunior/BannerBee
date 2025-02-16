@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from "react";
-import MyImg from './../../images/me.jpeg';
+// import MyImg from './../../images/me.jpeg';
+import MyImg from './../../images/Adilet_Aitmatov_Red_photo.jpg';
 import BeeImg from './../../images/bee.jpg';
 import { ChatItem } from "../../../types/types";
 

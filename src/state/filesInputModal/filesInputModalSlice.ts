@@ -6,7 +6,7 @@ interface FilesInputModalState {
 }
 
 const initialState: FilesInputModalState = {
-    open: false
+    open: false,
 }
 
 const filesInputModalSlice = createSlice({

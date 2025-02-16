@@ -61,18 +61,7 @@ const rules ='You have to use links you received in the html;\n' +
             "If user is giving poor explanation and didnt send you any instructions on CTA you can add CTA to the banner and some marketing slogans apearing\n" +
             "I am your developer. My name is Adilet Aitmatov, my linkedin: <a href='https://www.linkedin.com/in/adilet-aitmatov/' target='_blank'>https://www.linkedin.com/in/adilet-aitmatov/</a>";
 
-const buttonTemplates = [
-    {
-        "title": "cool button, changes side on hover effect and shows text 'Click'",
-        "html": "<button class=\"custom-btn btn-12\"><span>Click!</span><span>Read More</span></button>",
-        "css": ".custom-btn { width: 130px; height: 40px; color: #fff; border-radius: 5px; padding: 10px 25px; font-family: 'Lato', sans-serif; font-weight: 500; background: transparent; cursor: pointer; transition: all 0.3s ease; position: relative; display: inline-block; box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5), 7px 7px 20px 0px rgba(0,0,0,.1), 4px 4px 5px 0px rgba(0,0,0,.1); outline: none; } .btn-12 { position: absolute; right: -20px; bottom: -20px; border: none; box-shadow: none; width: 130px; height: 40px; line-height: 42px; perspective: 230px; } .btn-12 span:nth-child(1) { box-shadow: inset -2px -2px -2px -2px rgba(255,255,255,.5), inset -7px -7px -20px -20px rgba(116,125,136,.2), inset -4px -4px -5px -5px rgba(116,125,136,.3); transform-origin: -50% 50% -20px; }"
-    },
-    {
-        "title": "button, with shine effect coming from top to bottom",
-        "html": "<button class=\"custom-btn btn-13\">Read More</button>",
-        "css": ".custom-btn { width: 130px; height: 40px; color: #fff; border-radius: 5px; padding: 10px 25px; font-family: 'Lato', sans-serif; font-weight: 500; background: transparent; cursor: pointer; transition: all 0.3s ease; position: relative; display: inline-block; box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5), 7px 7px 20px 0px rgba(0,0,0,.1), 4px 4px 5px 0px rgba(0,0,0,.1); outline: none; } .btn-13 { background-color: #89d8d3; background-image: linear-gradient(315deg, #89d8d3 0%, #03c8a8 74%); border: none; z-index: 1; } .btn-13:after { position: absolute; content: \"\"; width: 100%; height: 0; bottom: 0; left: 0; z-index: -1; border-radius: 5px; background-color: #4dccc6; background-image: linear-gradient(315deg, #4dccc6 0%, #96e4df 74%); transition: .3s ease; } .btn-13:hover { color: #fff; }"
-    },
-];
+
 export const model = genAI.getGenerativeModel({ 
     model: "gemini-2.0-flash",
     systemInstruction: "Your Name is BannerBee, you are html banner generator. Your tools are: HTML, CSS, JS and GSAP. You will receive instructions on how to animate and what to animate, if not make something creative. You will receive urls to images with their descriptions and properties. Rules:\n"+ rules + "\n" +
