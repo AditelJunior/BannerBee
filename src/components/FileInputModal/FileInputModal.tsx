@@ -43,7 +43,6 @@ const FileInputModal = () => {
                 filesArr.push(fileItem)
             }
         }
-        // setInputFiles([...inputFiles, ...filesArr]);
         setInputFiles(filesArr);
         filesInput.value = '';
         setFilesState([])

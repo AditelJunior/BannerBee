@@ -75,6 +75,11 @@ const Home = () => {
    
    async function aiResponse() {
       let query:string = queryText.trim();
+
+      if(query.length === 0 && inputFiles.length === 0) {
+         return alert('Please provide instructions for banner animation or attach files for BannerBee.');
+      }
+      
       const userInput: any = document.getElementById('user_input');
 
       userInput.value = '';
@@ -84,9 +89,7 @@ const Home = () => {
       setQueryText('');
       setDisableSending(true);
 
-      if(query.length === 0 && inputFiles.length === 0) {
-         return alert('Please provide instructions for banner animation or attach files for BannerBee.');
-      }
+      
       setChatHistory((prev:ChatItem[])=> [
          ...prev,
          { role: "user", parts: [{ text: query, files: inputFiles}] },
