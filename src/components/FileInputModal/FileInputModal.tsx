@@ -23,6 +23,7 @@ const FileInputModal = () => {
     function saveFilesInState() {
         const modalInput:any = document.getElementById('modalInput');
         const fileDescs = modalInput.querySelectorAll('[data-file_desc]');
+        const filesInput = modalInput.querySelector('[type=file]');
 
         let filesArr:File[] = [];
         
@@ -42,7 +43,10 @@ const FileInputModal = () => {
                 filesArr.push(fileItem)
             }
         }
-        setInputFiles([...inputFiles, ...filesArr]);
+        // setInputFiles([...inputFiles, ...filesArr]);
+        setInputFiles(filesArr);
+        filesInput.value = '';
+        setFilesState([])
     }
 
     async function checkImageSize(file:any) {

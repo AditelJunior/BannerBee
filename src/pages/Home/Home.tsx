@@ -53,7 +53,7 @@ const Home = () => {
    const sessionName = useRef<string>(`session_${Date.now()}-${Math.round(Math.random()*100)}`);
    const messagesEndRef = useRef(null);
 
-   const inputFilesStore = useSelector((state:RootState) => state.files.inputFiles);
+   // const inputFilesStore = useSelector((state:RootState) => state.files.inputFiles);
    const dispatch = useDispatch();
 
     function scrollToBottom () {
@@ -96,10 +96,8 @@ const Home = () => {
       
       if(inputFiles.length > 0) {
          uploadedFiles = await uploadFiles(inputFiles);
-         // setAllUploadedFiles([...allUploadedFiles, ...uploadedFiles])
-         setAllUploadedFiles([...uploadedFiles])
+         setAllUploadedFiles((prev)=> [...prev, ...uploadedFiles])
          setInputFiles([]);
-         dispatch({type: 'files/clearFiles'})
       }
 
       let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
