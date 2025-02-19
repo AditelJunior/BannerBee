@@ -104,7 +104,15 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
             </div>
             {!html ? <span>HTML is not generated yet</span> : null}
             <div className="iframe_wrap">
-                <iframe onClick={(e)=> e.preventDefault()} srcDoc={html} frameBorder="0" id="html_preview" width={iframeSize.width} height={iframeSize.height}></iframe>
+                <iframe 
+                    onClick={(e)=> e.preventDefault()} 
+                    srcDoc={html} 
+                    frameBorder="0" 
+                    id="html_preview" 
+                    width={iframeSize.width} 
+                    height={iframeSize.height}
+                    title="preview of the banner genrated by AI"
+                ></iframe>
             </div>
         </div>
     )
