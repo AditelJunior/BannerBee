@@ -14,34 +14,25 @@ const FileInputModal = () => {
     const {inputFiles, setInputFiles} = useHomeContext();
     
     const dispatch = useDispatch();
-
-    type FileSize = {
-        width: number | 0,
-        height: number | 0,
-    }
     
     function saveFilesInState() {
         const modalInput:any = document.getElementById('modalInput');
-        const fileDescs = modalInput.querySelectorAll('[data-file_desc]');
         const filesInput = modalInput.querySelector('[type=file]');
 
         let filesArr:File[] = [];
         
         for(let i=0;i<filesState.length;i++) {
             let fileItem:File;
-            let  imgSize:any = checkImageSize(filesState[i]);
-
-            if(filesState[i]) {
-                fileItem = {
-                    file: filesState[i], 
-                    description: fileDescs[i].value, 
-                    size: {
-                        width: imgSize.width, height: imgSize.height
-                    },
-                    url: URL.createObjectURL(filesState[i]),
-                }
-                filesArr.push(fileItem)
+            let imgSize:any = checkImageSize(filesState[i].file);
+            fileItem = {
+                file: filesState[i].file, 
+                description: filesState[i].description, 
+                size: {
+                    width: imgSize.width, height: imgSize.height
+                },
+                url: URL.createObjectURL(filesState[i].file),
             }
+            filesArr.push(fileItem)
         }
         setInputFiles(filesArr);
         filesInput.value = '';
@@ -72,13 +63,31 @@ const FileInputModal = () => {
         });
         return {width: 0, height: 0};
     }
-    function handleFilesState(changedFiles:FileList) {
-        let filesArr:any[] = [];
-        for (let i = 0; i < changedFiles.length; i++) {
-            filesArr.push(changedFiles[i])
-        }
-        setFilesState(filesArr);
+
+    type FileLocal = {
+        id: number,
+        file: any,
+        description?: string
     }
+    function handleFilesState(changedFiles:FileList) {
+        let filesArr:FileLocal[] = [];
+        for (let i = 0; i < changedFiles.length; i++) {
+            filesArr.push({
+                id: Date.now() + Math.random(),
+                file: changedFiles[i],
+                description: '',
+            });
+        }
+        setFilesState((prev) => [...prev, ...filesArr]);
+    }
+
+    function handleDescriptionChange (id: number, description: string) {
+        setFilesState(prev =>
+            prev.map(item =>
+                item.id === id ? { ...item, description: description } : item
+            )
+        );
+    };
         
     return (
         <div className={`modal ${filesInputModal ? 'modal_open' :''}`} id="modalInput">
@@ -92,11 +101,22 @@ const FileInputModal = () => {
                 {
                     filesState.map((file:any, id:number) => {
                         return (
-                            <div key={id} className="desc_row">
-                                <label htmlFor={'desc'+id}>{file.name}</label>
-                                <input type="text" id={'desc_'+id} className="file_description" placeholder="File desctiption" data-file_desc/>
+                            <div className="desc_row_wrap" key={id}>
+                                <div className="desc_row">
+                                    <label htmlFor={'desc_'+id}>{file.file.name}</label>
+                                    <input 
+                                        type="text"
+                                        id={'desc_'+id}
+                                        value={file.description}
+                                        onChange={(e) => handleDescriptionChange(file.id, e.target.value)}
+                                        className="file_description"
+                                        placeholder="File desctiption"
+                                        data-file_desc/>
+                                </div>
+                                <div>
+                                    <button className="button_no_style" onClick={(e) => setFilesState((prev)=> prev.filter((prev,i) => i !== id))}>✕</button> 
+                                </div>
                             </div>
-                            
                         )
                     })
                 }
