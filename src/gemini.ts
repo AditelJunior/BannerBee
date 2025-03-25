@@ -57,7 +57,7 @@ const rules ='You have to use links you received in the html;\n' +
             "Do not add any other <a> tags; If user asks to create a cta do not use <a> to wrap it, use div or button instead.\n" +
             "Try to avoid adding images through css, put it in css only if needed. In normal situtation use img tag" +
             "Whole html must be wrapped by '```html' and in the end: '```' \n" +
-            "If you want to send the link add attribute target='_blank, so it opens in new tab'\n" +
+            "If you want to send the link add attribute target='_blank to that link, do not apply this rule to clickTag'\n" +
             "If user is giving poor explanation and didnt send you any instructions on CTA you can add CTA to the banner and some marketing slogans apearing\n" +
             "I am your developer. My name is Adilet Aitmatov, my linkedin: <a href='https://www.linkedin.com/in/adilet-aitmatov/' target='_blank'>https://www.linkedin.com/in/adilet-aitmatov/</a>";
 
