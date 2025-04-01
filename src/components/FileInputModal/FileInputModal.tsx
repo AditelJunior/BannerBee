@@ -15,7 +15,7 @@ const FileInputModal = () => {
     
     const dispatch = useDispatch();
     
-    function saveFilesInState() {
+    async function saveFilesInState() {
         const modalInput:any = document.getElementById('modalInput');
         const filesInput = modalInput.querySelector('[type=file]');
 
@@ -23,7 +23,7 @@ const FileInputModal = () => {
         
         for(let i=0;i<filesState.length;i++) {
             let fileItem:File;
-            let imgSize:any = checkImageSize(filesState[i].file);
+            let imgSize:any = await checkImageSize(filesState[i].file);
             fileItem = {
                 file: filesState[i].file, 
                 description: filesState[i].description, 
@@ -40,28 +40,22 @@ const FileInputModal = () => {
     }
 
     async function checkImageSize(file:any) {
+        let imgSize = {width: undefined, height: undefined}
+
         if(!file) {
-            return {width: 0, height: 0};
+            return imgSize;
         }
-        const img = document.createElement("img");
-        const promise = new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
             img.onload = () => {
                const width:number  = img.naturalWidth;
                const height:number = img.naturalHeight;
-
                resolve({ width: width, height: height});
             };
             // Reject promise on error
-            img.onerror = reject;
+            img.onerror = ()=> {return imgSize};
+            img.src = URL.createObjectURL(file);
         });
-        // Setting the source makes it start downloading and eventually call `onload`
-        img.src = window.URL.createObjectURL(file);
-        await promise.then((value:any) => {
-            return value;
-        }).catch((error) => {
-            console.error(error);
-        });
-        return {width: 0, height: 0};
     }
 
     type FileLocal = {
