@@ -1,0 +1,26 @@
+@import url('../../styles/colors.scss');
+@import url('../../styles/commonStyles.scss');
+.profile-container {
+    padding-top: 40px;
+}
+.profile-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    svg {
+        width: 50px;
+        height: 50px;
+    }
+}
+.back_link {
+    color: var(--body-color);
+}
+.sign-out-button {
+    padding: 6px 15px;
+    font-size: 18px;
+    background: var(--input-bg);
+    color: var(--body-color);
+    border: var(--body-color) 2px solid;
+    border-radius: 8px;
+}
