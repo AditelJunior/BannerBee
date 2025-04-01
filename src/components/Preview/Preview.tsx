@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, } from "react";
+import { ref, listAll, getDownloadURL } from "firebase/storage";
+import { storage } from "../../firebase";
+
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { File } from "../../../types/types";
@@ -10,15 +13,15 @@ type BannerSize = {
 }
 
 interface PreviewProps {
-    sessionName: string;
-    html?: string;
+    sessionName: string | null;
+    html?: string | '';
     allUploadedFiles?: File[] | [];
 }
 
 const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
     const [htmlPreviewFull, setHtmlPreviewFull] = useState<boolean>(false);
     const [iframeSize, setIframeSize] = useState<BannerSize>({width: 0, height: 0})
-
+    const iframeRef = useRef <HTMLIFrameElement> (null)
     useEffect(() => {
         if(html) {
             getAdSize(html)
@@ -40,12 +43,11 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
            setHtmlPreviewFull(true);
         }
     }
-    function downloadHtml(html:any) {
+    async function downloadHtml(html:any) {
         if(!html) {
             return alert("HTML is empty")
         }
-
-        const [newHtml, imgsFromHtml] = replaceHtmlUrls(html)
+        const [newHtml, imgsFromHtml] = await replaceHtmlUrls(html);
         const zip = new JSZip()
         // in case if folder is needed
         const folder:any = zip.folder('images')
@@ -55,7 +57,7 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
                     if (r.status === 200) return r.blob()
                     return Promise.reject(new Error(r.statusText))
                 })
-                const name = file.file.name;
+                const name = file.name;
                 folder.file(name, blobPromise)
             })
         }
@@ -65,7 +67,7 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
         });
         zip.file('index.html', htmlBlobPromise)
         zip.generateAsync({type:"blob"})
-            .then(blob => saveAs(blob, sessionName))
+            .then(blob => saveAs(blob, iframeSize.width ? (iframeSize.width+'X'+iframeSize.height) : sessionName!))
             .catch(e => console.log(e));
     }
     function getAdSize (htmlString:any) {
@@ -78,18 +80,34 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
             })
         }
     }
-    function replaceHtmlUrls(html:any) {
-        let imgsFromHtml:File[] = [];
-        if(allUploadedFiles)  {
-            for(let i = 0; i < allUploadedFiles.length; i++) {
-                if(html.includes(allUploadedFiles[i].url)) {
-                    imgsFromHtml.push(allUploadedFiles[i]);
-                    html = html.replaceAll(`${allUploadedFiles[i].url}`, `./images/${allUploadedFiles[i].file.name}`)
-                }
+    async function replaceHtmlUrls(html:any) {
+        let imgsFromHtml: {name: string, url: string}[] = [];
+    
+        if (sessionName) {
+            const listRef = ref(storage, sessionName);
+    
+            try {
+                const res = await listAll(listRef); // Wait for all items to be listed
+                const fetchUrls = res.items.map(async (itemRef) => {
+                    try {
+                        const url = await getDownloadURL(itemRef);
+                        imgsFromHtml.push({ name: itemRef.name, url: url });
+    
+                        // Replace all occurrences of the URL in the HTML
+                        html = html.replaceAll(url, `./images/${itemRef.name}`);
+                    } catch (error) {
+                        console.error(`Failed to get download URL for ${itemRef.name}:`, error);
+                    }
+                });
+    
+                await Promise.all(fetchUrls); // Wait for all URLs to be fetched and replaced
+    
+            } catch (error) {
+                console.error("Error listing files:", error);
             }
         }
-        
-        return [html, imgsFromHtml];
+    
+        return [html, imgsFromHtml]; // Ensure modified HTML and URLs are returned
     }
     return (
         <div id="preview_wrap" onClick={(e)=> htmlPreviewFull ? fullScreeHtmlPreview() : null }>
@@ -111,6 +129,7 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
                     id="html_preview" 
                     width={iframeSize.width} 
                     height={iframeSize.height}
+                    ref={iframeRef}
                     title="preview of the banner genrated by AI"
                 ></iframe>
             </div>

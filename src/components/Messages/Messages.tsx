@@ -1,28 +1,48 @@
-import React, {useState, useEffect, useRef} from "react";
-// import MyImg from './../../images/me.jpeg';
-import MyImg from './../../images/Adilet_Aitmatov_Red_photo.jpg';
+import React from "react";
 import BeeImg from './../../images/bee.jpg';
 import { ChatItem } from "../../../types/types";
 
+import { FaUser, FaHtml5 } from "react-icons/fa";
+import { setCurrentPreview } from "../../state/sessionsList/sessionsList";
+import { useDispatch } from "react-redux";
+import { auth } from "../../firebase";
 
 const Messages = (props:any) => {
+
+    const dispatch = useDispatch();
     const chatHistory = props.chatHistory;
 
     return (chatHistory.map((message:ChatItem, id:number) => {
+
         return <div className={`chat-msg ${message.role}`} key={id}>
-            <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank" className="chat-msg-profile">
-                <img className="chat-msg-img" src={message.role === 'user' ? MyImg : BeeImg} alt="avatar img" />
-            </a>
+            <div className="chat-msg-profile">
+                {
+                    message.role === 'user' ? (
+                        auth && auth.currentUser && auth.currentUser.photoURL ? (
+                            <img
+                                src={auth.currentUser.photoURL}
+                                alt="Profile"
+                                className="chat-msg-img"
+                            />
+                        ) : (<div className='chat-msg-img'> <FaUser /></div>)
+                    ) : (
+                        <img className="chat-msg-img" alt="bee img" src={BeeImg} />
+                    )
+                }
+            </div>
             <div className="chat-msg-content">
                 {
                     message.role === 'user' ?
                     <div className="user_msg_wrap"><p className="chat-msg-text">{message.parts[0].text}</p> 
                         {message.parts[0].files ?
                             <span className="files_list">{message.parts[0].files.map((file:any, id:number) => {
-                                    return <span key={id}>{file.file.name}</span>
+                                    return <span key={id}>{file.name}</span>
                         })}</span> : null}
                     </div> :
-                    <p className="chat-msg-text" dangerouslySetInnerHTML={{ __html: message.parts[0].text }}></p>   
+                    <div className="model_msg_wrap">
+                        <p className="chat-msg-text" dangerouslySetInnerHTML={{ __html: message.parts[0].text }}></p> 
+                        {message.parts[0].html && message.parts[0].html.length ? <button onClick={()=>dispatch(setCurrentPreview(message.parts[0].html))} className="html_chat_button">HTML <FaHtml5/></button> : null}  
+                    </div>
                 }
             </div>
         </div>

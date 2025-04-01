@@ -1,74 +1,177 @@
 import React, {useState, useEffect, useRef} from "react";
 import { model } from "../../gemini";
-import { storage } from "../../firebase";
+import { storage, auth } from "../../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, setDoc, getDocs, collection, deleteDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 import { useSelector, useDispatch } from "react-redux";
+import { setSessions, setCurrentSessionId, updateSession, setCurrentPreview, removeSession } from "../../state/sessionsList/sessionsList";
+import { RootState } from "../../state/store";
+
+import { Link } from "react-router";
 
 import Messages from "./../../components/Messages/Messages";
 import Preview from "./../../components/Preview/Preview";
 import FileInputModal from "./../../components/FileInputModal/FileInputModal";
 
-import { ChatItem, File } from "../../../types/types";
-import { RootState } from "../../state/store";
+import { ChatItem, File, Session } from "../../../types/types";
 import { useHomeContext } from '../../context/HomeContext';
 
 import BeeImg from './../../images/bee.jpg';
 import EyeImg from './../../images/eye.png';
 import HoneyBeeImg from './../../images/honeybee.png';
+
+import { FaUser, FaArrowLeft, FaArrowRight, FaTrashAlt } from "react-icons/fa";
+
 import "./styles.scss";
 
 const Home = () => {
-   const [modelResult, setModelResult] = useState<any>({});
    const [queryText, setQueryText] = useState<string>('');
-   const [allUploadedFiles, setAllUploadedFiles] = useState<File[]>([]);
-
    const [disableSending, setDisableSending] = useState<boolean>(false)
-   const { inputFiles, setInputFiles } = useHomeContext();
-   const [chatHistory, setChatHistory] = useState<ChatItem[]>([
-      { 
-         role: "user", 
-         parts: [{ text: "Hello!"}] 
-      },
-      { 
-         role: "model", 
-         parts: [{ text: "Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (Width X Height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!"}] 
-      },
-   ]);
+   const {inputFiles, setInputFiles} = useHomeContext();
+   const sessions = useSelector((state:RootState) => state.sessionsList.sessions);
+   const currentSession = useSelector((state:RootState) => state.sessionsList.currentSessionId);
+   const currentPreview = useSelector((state:RootState) => state.sessionsList.currentPreview);
+   
+   const sessionName = useRef<string>(`session_${Date.now()}-${Math.round(Math.random()*100)}`);
+   const messagesEndRef = useRef(null);
+   const userInputRef = useRef <HTMLTextAreaElement> (null);
+   const userRef = useRef(auth.currentUser);
+
+   const dispatch = useDispatch();
+
+   const chatConfigs = {
+      temperature: 2.0,
+      maxOutputTokens: 8192,
+      responseMimeType: "application/json",
+   }
+   const defaultHistory = {
+      messages: [
+         {role: "user",  parts: [{ text: "Hello!"}]},
+         { role: "model", parts: [{ text: `Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (Width X Height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!`,}]},
+      ],
+      database: [{ role: "user", parts: [{ text: '{ "text": "Hello!"}'}]},
+      { role: "model", parts: [{ text: `{"text":"Hello! My name is BannerBee. I create animated banners tailored to your needs. Please provide the banner <strong>SIZE (Width X Height)</strong> and any specific instructions for the animation,  and any images you'd like me to include. I'm here to bring your vision to life!", "html": ""}`}]},]
+   }
+   
+   const [messagesList, setMessagesList] = useState<ChatItem[]>(defaultHistory.database);
+
+   const [chatHistory, setChatHistory] = useState<ChatItem[]>(defaultHistory.messages);
+
    useEffect(() => {
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
          // document.body.classList.remove('dark-light');
          document.body.classList.add('dark-mode');
-     }
+      }
+
+      getSessions();
+      if(!currentSession) {
+         createNewSession();
+      } else if(sessions.find((session:Session) => session.id === currentSession)) {
+         switchChat(currentSession);
+      } else {
+         createNewSession();
+      }
    }, []);
+
+   const getSessions = async () => {
+      if(!auth.currentUser) return;
+      const listOfSessions = await getDocs(collection(db, "sessions", auth.currentUser.uid, "userSessions"));
+      const sessionsList:Session[] = [];
+
+      listOfSessions.forEach((doc) => {
+         let sessionDate = new Date(Number(doc.data().time.seconds)*1000);
+         let sessionTime = sessionDate.toLocaleTimeString();
+         let sessionDateStr = sessionDate.toLocaleDateString();
+         sessionsList.push({id: doc.id, chatHistory: doc.data().chatHistory, time: sessionDateStr + ' ' + sessionTime});
+      });
+      dispatch(setSessions(sessionsList));
+   }
+
    function changeColorMode() {
       document.body.classList.toggle('dark-mode');
    }
-   const chatRef = useRef(model.startChat({
-            //   history: [...chatHistory],
-              generationConfig: {
-                  temperature: 2.0,
-                  maxOutputTokens: 4000,
-              },
-   }));
-   const sessionName = useRef<string>(`session_${Date.now()}-${Math.round(Math.random()*100)}`);
-   const messagesEndRef = useRef(null);
 
-   // const inputFilesStore = useSelector((state:RootState) => state.files.inputFiles);
-   const dispatch = useDispatch();
+   const chatRef = useRef(model.startChat({
+      history: [...messagesList],
+      generationConfig: chatConfigs,
+   }));
+
+   const switchChat = (id:string) => {
+      const newChatHistory = [...sessions.find((session:Session) => session.id === id)?.chatHistory || []];
+      const formattedChatHistory = newChatHistory.map((message: ChatItem) => {
+         if (message.role === "model") {
+             const parsedMsg = formatAIText(message.parts[0].text);
+             return {
+               role: "model",
+               parts: [{
+                        text: parsedMsg.text,
+                        html: parsedMsg.html,
+                     },],
+             };
+         } else if (message.role === "user") {
+             const parsedMsgUser = JSON.parse(message.parts[0].text);
+             return {
+                 role: "user",
+                 parts: [{
+                         text: parsedMsgUser.text,
+                         files: parsedMsgUser.files,
+                     },],
+             };
+         }
+         return message;
+     });
+
+      setChatHistory(formattedChatHistory);
+      setMessagesList(newChatHistory);
+      chatRef.current = model.startChat({
+         history: [...newChatHistory],
+         generationConfig: chatConfigs,
+      });
+      dispatch(setCurrentSessionId(id));
+      sessionName.current = id;
+   }
+
+   
+
+   const uploadChatHistory = async (history:ChatItem[]) => {
+      try {
+         const date = new Date();
+
+         if (!userRef.current) {
+            throw new Error("User is not authenticated.");
+         }
+ 
+         const uid = userRef.current.uid; // Get the user's UID
+         const sessionDocRef = doc(db, "sessions", uid, "userSessions", sessionName.current);
+
+         let sessionDate = new Date();
+         let sessionTime = sessionDate.toLocaleTimeString();
+         let sessionDateStr = sessionDate.toLocaleDateString();
+         // // Upload chatHistory to Firestore
+         await setDoc(sessionDocRef, { time: date, chatHistory: history });
+         dispatch(updateSession({id: sessionName.current, chatHistory: history, time: sessionDateStr + ' ' + sessionTime}));
+      } catch (error) {
+         console.error("Error uploading chat history:", error);
+      }
+   }
 
     function scrollToBottom () {
         // messagesEndRef.current.scrollIntoView({ behavior: 'instant', block: "end"})
     }
 
    async function uploadFiles(files:File[]) {
-      const fileRes = await Promise.all(Array.from(files, async (file) => {
-         const storageRef = ref(storage, `${sessionName.current}/${file.file.name}`);
-         const response = await uploadBytes(storageRef, file.file);
-         const url = await getDownloadURL(response.ref);
-
-         file.url = url;
-         return file;
-      }));
+      const fileRes = await Promise.all(
+         Array.from(files, async (file) => {
+             const storageRef = ref(storage, `${sessionName.current}/${file.file.name}`);
+             const response = await uploadBytes(storageRef, file.file);
+             const url = await getDownloadURL(response.ref);
+             return {
+                 ...file,
+                 url, // Add the URL without mutating the original object
+             };
+         })
+     );
 
       return fileRes; // list of urls from firebase
    }
@@ -80,74 +183,66 @@ const Home = () => {
          return alert('Please provide instructions for banner animation or attach files for BannerBee.');
       }
       
-      const userInput: any = document.getElementById('user_input');
-
-      userInput.value = '';
-      userInput.style.height = 59+'px';
-      userInput.style.height = userInput.scrollHeight + 'px';
-      
+      resetUserInput();
       setQueryText('');
       setDisableSending(true);
-
-      
-      setChatHistory((prev:ChatItem[])=> [
-         ...prev,
-         { role: "user", parts: [{ text: query, files: inputFiles}] },
-      ]);
 
       let uploadedFiles: File[] = [];
       
       if(inputFiles.length > 0) {
          uploadedFiles = await uploadFiles(inputFiles);
-         setAllUploadedFiles((prev)=> [...prev, ...uploadedFiles])
          setInputFiles([]);
       }
 
-      let instructionForImages = ' Here are the images i have: ' + uploadedFiles.map((file, i) => {
-         return (
-               i + '-image\n' +
-               "name: " + file.file.name + '\n' +
-               "description: " + file.description + '\n' +
-               "width: " + file.size.width + '\n' +
-               "height: " + file.size.height + '\n' +
-               "url: " + file.url + '\n'
-         )
+      const jsonFiles = uploadedFiles.map((file) => ({
+         name: file.file.name,
+         description: file.description,
+         width: file.size.width,
+         height: file.size.height,
+         url: file.url,
+     }));
+      let textPartUser = { text: query, files: jsonFiles};
+      setChatHistory((prev:ChatItem[])=> [
+         ...prev,
+         { role: "user", parts: [textPartUser] },
+      ]);  
+
+      setMessagesList((prev:ChatItem[]) => {
+         const newHis = [...prev, { role: "user", parts: [{ text: JSON.stringify(textPartUser)}] }]
+         uploadChatHistory(newHis);
+         return newHis;
       });
 
-      if(uploadedFiles.length>0) {
-         query = query + instructionForImages;
-      }
-   
-      let modelRes: { text?: string, html?: string };
+      let modelRes: { text: string | '', html: string | '' };
       try {
-         await chatRef.current.sendMessage(query).then((value:any)=> {
-               modelRes = formatAIText(value.response.text());
-               if(modelRes && (modelRes.text || modelRes.html)) {
-               setModelResult(modelRes);
-   
-               setChatHistory((prev:ChatItem[])=> [
-                     ...prev,
-                     // { role: "user", parts: [{ text: query }] },
-                     { role: "model", parts: [{ text: (modelRes.text ? modelRes.text : 'Banner is ready, it is in the preview section: ')}] }
-               ]);
+         await chatRef.current.sendMessage(JSON.stringify(textPartUser)).then((value:any)=> {
+            modelRes = formatAIText(value.response.text());
+            setChatHistory((prev:ChatItem[])=> [
+               ...prev,
+               { role: "model", parts: [{ text: (modelRes.text ? modelRes.text : 'Banner is ready, you can find it in preview section'), html: modelRes.html}] }
+            ]);
+
+            setMessagesList((prev:ChatItem[]) => {
+               const newHis = [ ...prev, { role: "model", parts: [{ text: value.response.text() }] }]
+               uploadChatHistory(newHis);
+               return newHis;
+            });
+            if(modelRes && modelRes.html) {
+               dispatch(setCurrentPreview(modelRes.html))
                scrollToBottom();
             }
          });
       } catch (error) {
          alert("Error occured while generating banner. Please try again.");
-         console.error("Error sending message:", error);
       }
-      //allow user to send next message
       setDisableSending(false)
    }
 
    function formatAIText(response:string) {
-        // Regex to extract HTML code inside triple backticks
-        const htmlRegex = /```html\n([\s\S]*?)```/;
-        const match = response.match(htmlRegex);
-        // Extract HTML and remove it from the response text
-        let htmlPart:string = match ? match[1] : "";
-        let textPart:string = response.replace(htmlRegex, "").trim();
+      const parsedResponse = JSON.parse(response);
+
+        let htmlPart:string = parsedResponse.html;
+        let textPart:string = parsedResponse.text;
       
         // Convert AI markdown to HTML tags
         textPart = textPart
@@ -159,16 +254,33 @@ const Home = () => {
           textPart = textPart.replace(/(?:^|\n)\* (.*?)/g, (_, item) => `<li>${item}</li>`);
 
           // Wrap <li> items inside a <ul> if there are any
-        if (textPart.includes("<li>")) {
-            textPart = `<ul>${textPart}</ul>`;
-        }
-
-        if(!htmlPart && modelResult.html) {
-            htmlPart = modelResult.html
-        }
-        return { text: textPart, html: htmlPart  };
+      if (textPart.includes("<li>")) {
+         textPart = `<ul>${textPart}</ul>`;
+      }
+      
+      return { text: textPart, html: htmlPart.trim() };
    }
-   
+
+   const createNewSession = () => {
+      sessionName.current = `session_${Date.now()}-${Math.round(Math.random()*100)}`;
+      dispatch(setCurrentSessionId(sessionName.current))
+      setMessagesList(defaultHistory.database);
+      setChatHistory(defaultHistory.messages);
+   }
+   const removeSessionHandler = async (sessionId:string) => {
+      dispatch(removeSession(sessionId))
+      if(userRef.current) {
+         const docRef = doc(db, "sessions", userRef.current.uid, "userSessions", sessionId);
+         await deleteDoc(docRef);
+      }
+
+   }
+   function resetUserInput() {
+      userInputRef.current!.value = '';
+      userInputRef.current!.style.height = '59px';
+      userInputRef.current!.style.height = userInputRef.current!.scrollHeight + 'px';
+      
+   }
    function textAreaHandler(e:any) {
       const textArea = e.target;
       textArea.style.height = 59+'px';
@@ -180,7 +292,14 @@ const Home = () => {
       const container: any = document.getElementById('preview_container');
       container.classList.toggle('active')
    }
-
+   function openSessions() {
+      const sessionsArea: any = document.getElementById('sessions-area');
+      sessionsArea.classList.add('active');
+   }
+   function closeSessions() {
+      const sessionsArea: any = document.getElementById('sessions-area');
+      sessionsArea.classList.remove('active');
+   }
    return (
       <div>
          <div className="app">
@@ -193,6 +312,20 @@ const Home = () => {
                         <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
                   </div>
+                  <div className="user_profile">
+                     <Link to='/profile' className="profile_link">
+                        {
+                           auth && auth.currentUser && auth.currentUser.photoURL ? (
+                                 <img
+                                    src={auth.currentUser.photoURL}
+                                    alt="Profile"
+                                    className="profile_photo_header"
+                                 />
+                           ) :
+                           <div className='profile_photo_header'><FaUser /></div>
+                        }
+                     </Link>
+                  </div>
                   <div className="settings">
                         <button className={`open_html_preview button_no_style`}  onClick={()=>{openMobilePreview()}}>
                            <img src={EyeImg } alt="html preview"/>
@@ -201,6 +334,24 @@ const Home = () => {
                </div>
             </div>
             <div className="wrapper">
+               <div className="sessions-area" id="sessions-area">
+                  <div className="sessions_scroll_area">
+                     <button className="close_sessions" onClick={()=>closeSessions()}><FaArrowLeft/></button>
+                     <button className="open_sessions" onClick={()=>openSessions()}><FaArrowRight/></button>
+                     <span className="sessions_header">Sessions:</span>
+                     <button onClick={()=>{createNewSession(); closeSessions()} } className="new_session_button">New Session</button>
+                     <ul className="sessions-list">
+                        {
+                           sessions.map((session:Session, id:number) => {
+                              return <li key={id} className={session.id === currentSession ? 'active_session' : ''} onClick={()=> dispatch(setCurrentSessionId(session.id))}>
+                                 <button onClick={()=>{switchChat(session.id); closeSessions()}}>{ session.id } <br />{session.time }</button>
+                                 <button onClick={()=> {removeSessionHandler(session.id); }} className="btn_remove"><FaTrashAlt /></button>
+                              </li>
+                           })
+                        }
+                     </ul>
+                  </div>
+               </div>
                <div className="chat-area">
                   <div className="chat-area-main">
                      { 
@@ -212,9 +363,9 @@ const Home = () => {
                      // LOADER 
                         disableSending ?
                         <div className={`chat-msg model`}>
-                              <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank" className="chat-msg-profile">
+                              <div className="chat-msg-profile">
                                  <img className="chat-msg-img" src={BeeImg} alt="bee img thinking" />
-                              </a>
+                              </div>
                               <div className="chat-msg-content">
                                  <p className="chat-msg-text">Generating...</p>   
                               </div>
@@ -231,7 +382,12 @@ const Home = () => {
                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
                      </button>    
                         
-                     <textarea id="user_input" placeholder="Type your request here..." onKeyDown={(e:any)=> (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) ? (e.preventDefault(), aiResponse()) : null } onChange={(e)=> (textAreaHandler(e))} />
+                     <textarea 
+                        id="user_input" 
+                        ref={userInputRef}
+                        placeholder="Type your request here..." 
+                        onKeyDown={(e:any)=> (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) ? (e.preventDefault(), aiResponse()) : null } 
+                        onChange={(e)=> (textAreaHandler(e))} />
                         
                      <button disabled={disableSending} className="button_no_style send_button" onClick={()=> aiResponse()}><span>➤</span></button>
                      <span className="developed_by">Developed by: <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank">Adilet Aitmatov</a></span>
@@ -239,7 +395,7 @@ const Home = () => {
                </div>
                <div className="detail-area" id="preview_container">
                   {
-                     <Preview html={modelResult.html} sessionName={sessionName.current} allUploadedFiles={allUploadedFiles}/>
+                     <Preview html={currentPreview} sessionName={currentSession} />
                   }
                </div>
             </div>
