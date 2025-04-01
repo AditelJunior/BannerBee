@@ -11,3 +11,9 @@ export type File = {
        height: number,
     }
  }
+
+export type Session = {
+    id: string; // Session ID
+    chatHistory: any[]; // Chat history for the session
+    time: string; // Timestamp of the session
+}
