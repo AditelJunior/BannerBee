@@ -142,8 +142,6 @@ const Login = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
-                setUser(user)
-                setErrorMessage(null);
 
                 // Send verification email
                 sendEmailVerification(user)
@@ -152,9 +150,15 @@ const Login = () => {
                         alert("A verification email has been sent to your email address. Please verify your email before logging in.");
                     })
                     .catch((error) => {
-                        // console.error("Error sending verification email:", error);
                         setErrorMessage("Failed to send verification email. Please try again.");
                     });
+                if (userCredential.user.emailVerified) {
+                    setUser(userCredential.user);
+                    setErrorMessage(null);
+                } else {
+                    setErrorMessage("Please verify your email before logging in.");
+                    signOut(auth); // Ensure unverified users are signed out
+                }
             })
             .catch((error) => {
                 handleAuthError(error);
