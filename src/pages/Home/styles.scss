@@ -664,6 +664,10 @@ img {
 }
 .user_profile {
     .profile_link {
+        .profile_photo_header {
+            display: flex;
+            align-items: center;
+        }
         display: flex;
         align-items: center;
         cursor: pointer;
