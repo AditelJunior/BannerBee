@@ -2,15 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signInAnonymously, signInWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
 import { useNavigate } from "react-router";
 // import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../state/store";
 
 // import { setUser, setLoading, setError, clearUser } from "../../state/userInfo/userInfo";
 
 import './styles.scss';
 
 // import GoogleLogo from "./../../images/logo-google.png";
-import MicrosoftLogo from "./../../images/microsoft-logo.png";
-import AnonynousUserLogo from "./../../images/anonymous-user.png";
+// import MicrosoftLogo from "./../../images/microsoft-logo.png";
+// import AnonynousUserLogo from "./../../images/anonymous-user.png";
 
 const Login = () => {
     const auth = getAuth();
