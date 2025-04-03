@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from "react";
 import { model } from "../../gemini";
 import { storage, auth } from "../../firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from "firebase/storage";
 import { doc, setDoc, getDocs, collection, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useSelector, useDispatch } from "react-redux";
@@ -21,7 +21,7 @@ import BeeImg from './../../images/bee.jpg';
 import EyeImg from './../../images/eye.png';
 import HoneyBeeImg from './../../images/honeybee.png';
 
-import { FaUser, FaArrowLeft, FaArrowRight, FaTrashAlt } from "react-icons/fa";
+import { FaUser, FaArrowLeft, FaArrowRight, FaTrashAlt, FaHtml5 } from "react-icons/fa";
 
 import "./styles.scss";
 
@@ -269,6 +269,19 @@ const Home = () => {
    }
    const removeSessionHandler = async (sessionId:string) => {
       dispatch(removeSession(sessionId))
+
+      const listRef = ref(storage, sessionId);
+      listAll(listRef).then(function (result) {
+         result.items.forEach(function (file) {
+            deleteObject(file).then(() => {
+               // File deleted successfully
+             }).catch((error) => {
+               // Uh-oh, an error occurred!
+             });
+         });
+     }).catch(function (error) {
+         // Handle any errors
+     });
       if(userRef.current) {
          const docRef = doc(db, "sessions", userRef.current.uid, "userSessions", sessionId);
          await deleteDoc(docRef);
@@ -312,6 +325,11 @@ const Home = () => {
                         <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
                   </div>
+                  <div className="settings">
+                        <button className={`open_html_preview button_no_style`}  onClick={()=>{openMobilePreview()}}>
+                           HTML<FaHtml5/>
+                        </button>
+                  </div>
                   <div className="user_profile">
                      <Link to='/profile' className="profile_link">
                         {
@@ -325,11 +343,6 @@ const Home = () => {
                            <div className='profile_photo_header'><FaUser /></div>
                         }
                      </Link>
-                  </div>
-                  <div className="settings">
-                        <button className={`open_html_preview button_no_style`}  onClick={()=>{openMobilePreview()}}>
-                           <img src={EyeImg } alt="html preview"/>
-                        </button>
                   </div>
                </div>
             </div>
