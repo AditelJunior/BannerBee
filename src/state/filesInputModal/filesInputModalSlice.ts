@@ -1,4 +1,3 @@
-import { File } from "../../../types/types";
 import { createSlice } from "@reduxjs/toolkit";
 
 interface FilesInputModalState { 
