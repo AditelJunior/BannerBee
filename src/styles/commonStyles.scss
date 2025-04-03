@@ -9,7 +9,10 @@ body {
 html {
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
-    position: fixed;
+    // position: fixed;
+}
+* {
+    box-sizing: border-box;
 }
 
 .dark-mode {
