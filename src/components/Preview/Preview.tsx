@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef, } from "react";
 import { ref, listAll, getDownloadURL } from "firebase/storage";
+
 import { storage } from "../../firebase";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+
+import * as htmlToImage from 'html-to-image';
+import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image';
+
 import { File } from "../../../types/types";
 import './styles.scss';
 
@@ -27,6 +32,7 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
             getAdSize(html)
         }
     }, [html])
+    
 
     function reloadHtmlPreview() {
         let htmlPreview:any =  document.getElementById('html_preview')
@@ -51,6 +57,7 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
         const zip = new JSZip()
         // in case if folder is needed
         const folder:any = zip.folder('images')
+
         if(imgsFromHtml.length > 0) {
             imgsFromHtml.forEach((file:any) => {
                 const blobPromise = fetch(file.url).then(r => {
@@ -65,10 +72,18 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
             if (r.status === 200) return r.blob()
             return Promise.reject(new Error(r.statusText))
         });
+        const backupImageName = `BACKUP_IMAGE-${iframeSize.width ? (iframeSize.width+'X' + iframeSize.height) : sessionName}.jpeg`;
+        const backupImageBlob = htmlToImage.toBlob(iframeRef.current!, { quality: 1, pixelRatio: 1}).then((blob)=> {
+            if (blob) return blob
+                return Promise.reject(alert('Backup image failed to load'))
+        })
+
+        zip.file(backupImageName, backupImageBlob!)
         zip.file('index.html', htmlBlobPromise)
         zip.generateAsync({type:"blob"})
             .then(blob => saveAs(blob, iframeSize.width ? (iframeSize.width+'X'+iframeSize.height) : sessionName!))
             .catch(e => console.log(e));
+        
     }
     function getAdSize (htmlString:any) {
         const match = htmlString.match(/<meta\s+name=["']ad\.size["']\s+content=["']width=(\d+),height=(\d+)["']/);
@@ -91,10 +106,13 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
                 const fetchUrls = res.items.map(async (itemRef) => {
                     try {
                         const url = await getDownloadURL(itemRef);
-                        imgsFromHtml.push({ name: itemRef.name, url: url });
-    
-                        // Replace all occurrences of the URL in the HTML
-                        html = html.replaceAll(url, `./images/${itemRef.name}`);
+
+                        if(html.includes(url)) {
+                            imgsFromHtml.push({ name: itemRef.name, url: url });
+
+                            // Replace all occurrences of the URL in the HTML
+                            html = html.replaceAll(url, `./images/${itemRef.name}`);
+                        }
                     } catch (error) {
                         console.error(`Failed to get download URL for ${itemRef.name}:`, error);
                     }

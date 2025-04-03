@@ -14,6 +14,7 @@
     "file-saver": "^2.0.5",
     "firebase": "^11.2.0",
     "firebaseui": "^6.1.0",
+    "html-to-image": "^1.11.13",
     "jszip": "^3.10.1",
     "react": "^19.0.0",
     "react-chatbot-kit": "^2.2.2",
