@@ -143,7 +143,6 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
                 <iframe 
                     onClick={(e)=> e.preventDefault()} 
                     srcDoc={html} 
-                    frameBorder="0" 
                     id="html_preview" 
                     width={iframeSize.width} 
                     height={iframeSize.height}
