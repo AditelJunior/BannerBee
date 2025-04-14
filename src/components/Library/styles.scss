@@ -1,0 +1,77 @@
+@import url("../../styles/colors.scss");
+@import url("../../styles/commonStyles.scss");
+
+.modal_library {
+    display: none;
+    position: absolute;
+    top: 30px;
+    left: 10%;
+    z-index: 999;
+    background: var(--input-bg);
+    box-shadow: 0px 0px 100px rgba(#000000, 0.5);
+    border: 1px solid lightgray;
+    width: 80%;
+    padding: 50px 50px 50px 50px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    &.modal_open {
+        display: block;
+    }
+    
+    .close_modal {
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 20px;
+        line-height: 15px;
+        padding: 10px;
+        background: transparent;
+        color: var(--body-color)
+    }
+    .library_list {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        .library_card {
+            width: 32%;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            img {
+                height: 200px;
+                object-fit: contain;
+            }
+            p {
+                font-size: 16px;
+                margin: 3px 0 10px 0;
+            }
+        }
+    }
+}
+@media screen and (max-width: 768px) {
+    .modal_library {
+        padding: 30px;
+        .library_list {
+            .library_card {
+                width: 49%;
+                img {
+                    height: 150px;
+                    object-fit: contain;
+                }
+            }
+        }
+    }
+}
+@media screen and (max-width: 500px) {
+    .modal_library {
+        padding: 10px;
+        .library_list {
+            .library_card {
+                width: 100%;
+                img {
+                    height: 150px;
+                    object-fit: contain;
+                }
+            }
+        }
+    }
+}
