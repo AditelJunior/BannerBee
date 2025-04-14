@@ -40,6 +40,7 @@ img {
     margin: 0;
     padding: 0;
     background: transparent;
+    color: var(--body-color);
 }
 .send_button {
     font-size: 18px;
@@ -53,6 +54,10 @@ img {
         &:hover {
             filter: invert(0.5);
         }
+    }
+    svg {
+        width: 30px;
+        height: 30px;
     }
 }
 
@@ -595,7 +600,7 @@ img {
 
 .chat-area-footer svg {
  color: var(--settings-icon-color);
- width: 20px;
+ width: 30px;
  flex-shrink: 0;
  cursor: pointer;
  &:hover {
@@ -742,4 +747,16 @@ img {
         }
     }
     
+}
+@media (min-width: 1441px) {
+    .sessions-area {
+        position: relative;
+        transform: translate(0);
+        .open_sessions {
+            display: none;
+        }
+        .close_sessions {
+            display: none;
+        }
+    }
 }
