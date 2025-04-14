@@ -73,7 +73,7 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
             return Promise.reject(new Error(r.statusText))
         });
         const backupImageName = `BACKUP_IMAGE-${iframeSize.width ? (iframeSize.width+'X' + iframeSize.height) : sessionName}.jpeg`;
-        const backupImageBlob = htmlToImage.toBlob(iframeRef.current!, { quality: 1, pixelRatio: 1}).then((blob)=> {
+        const backupImageBlob = htmlToImage.toBlob(iframeRef.current?.contentDocument?.querySelector('html')!, { quality: 1, pixelRatio: 1}).then((blob)=> {
             if (blob) return blob
                 return Promise.reject(alert('Backup image failed to load'))
         })
