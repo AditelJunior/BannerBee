@@ -12,22 +12,24 @@ import { Link } from "react-router";
 
 import Messages from "./../../components/Messages/Messages";
 import Preview from "./../../components/Preview/Preview";
+import Library from "./../../components/Library/Library";
 import FileInputModal from "./../../components/FileInputModal/FileInputModal";
 
 import { ChatItem, File, Session } from "../../../types/types";
 import { useHomeContext } from '../../context/HomeContext';
 
 import BeeImg from './../../images/bee.jpg';
-import EyeImg from './../../images/eye.png';
+
 import HoneyBeeImg from './../../images/honeybee.png';
 
-import { FaUser, FaArrowLeft, FaArrowRight, FaTrashAlt, FaHtml5 } from "react-icons/fa";
+import { FaUser, FaArrowLeft, FaArrowRight, FaTrashAlt, FaHtml5, FaFolder } from "react-icons/fa";
 
 import "./styles.scss";
 
 const Home = () => {
    const [queryText, setQueryText] = useState<string>('');
    const [disableSending, setDisableSending] = useState<boolean>(false)
+   const [libraryIsOpen, setLibraryIsOpen] = useState<boolean>(false)
    const {inputFiles, setInputFiles} = useHomeContext();
    const sessions = useSelector((state:RootState) => state.sessionsList.sessions);
    const currentSession = useSelector((state:RootState) => state.sessionsList.currentSessionId);
@@ -168,7 +170,7 @@ const Home = () => {
              const url = await getDownloadURL(response.ref);
              return {
                  ...file,
-                 url, // Add the URL without mutating the original object
+                 url, 
              };
          })
      );
@@ -182,7 +184,6 @@ const Home = () => {
       if(query.length === 0 && inputFiles.length === 0) {
          return alert('Please provide instructions for banner animation or attach files for BannerBee.');
       }
-      
       resetUserInput();
       setQueryText('');
       setDisableSending(true);
@@ -403,6 +404,7 @@ const Home = () => {
                         onChange={(e)=> (textAreaHandler(e))} />
                         
                      <button disabled={disableSending} className="button_no_style send_button" onClick={()=> aiResponse()}><span>➤</span></button>
+                     {/* <button className="button_no_style send_button" onClick={()=> setLibraryIsOpen(true)}><FaFolder/></button> */}
                      <span className="developed_by">Developed by: <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank">Adilet Aitmatov</a></span>
                   </div>
                </div>
@@ -413,6 +415,7 @@ const Home = () => {
                </div>
             </div>
          </div>
+         <Library modalOpen={libraryIsOpen} setModalOpen={setLibraryIsOpen}/>
          <FileInputModal /> 
       </div>
    )
