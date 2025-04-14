@@ -40,9 +40,7 @@ const Messages = (props:any) => {
                         })}</span> : null}
                     </div> :
                     <div className="model_msg_wrap">
-                        {message.role === 'user' ?
-                        <p className="chat-msg-text">{message.parts[0].text}</p> :
-                        <p className="chat-msg-text" dangerouslySetInnerHTML={{ __html: message.parts[0].text }}></p> }
+                        <p className="chat-msg-text" dangerouslySetInnerHTML={{ __html: message.parts[0].text }}></p> 
                         {message.parts[0].html && message.parts[0].html.length ? <button onClick={()=>dispatch(setCurrentPreview(message.parts[0].html))} className="html_chat_button">HTML <FaHtml5/></button> : null}  
                     </div>
                 }
