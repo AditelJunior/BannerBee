@@ -42,6 +42,7 @@ const Library = ({modalOpen, setModalOpen}:LibraryProps) => {
     return (
         <div className={`modal_library ${modalOpen ? 'modal_open' :''}`} id="modalLibrary">
             <button onClick={(e)=>setModalOpen(false)} className="close_modal button_no_style">✕</button>
+            <h2>Templates Library</h2>
             <div className='library_list'>
                 {
                     libraryListState.map((item, i) => {
