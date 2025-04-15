@@ -197,6 +197,7 @@ img {
     .html_preview_control {
         display: flex;
         justify-content: center;
+        position: fixed;
         gap: 15px;
         z-index: 101;
         margin-top: 10px;
@@ -212,16 +213,19 @@ img {
             }
         }
     }
+    .preview_not_generated_label {
+        display: block;
+        margin-top: 100px;
+    }
     .iframe_wrap {
         box-sizing: border-box;
         position: relative;
         display: flex;
-        overflow: auto;
         justify-content: center;
-        width: 100%;
         min-height: 500px;
+        width: fit-content;
         height: 100%;
-        margin-top: 40px;
+        margin-top: 60px;
         #html_preview {
             background-color: #fff;
             overflow: auto;
@@ -229,18 +233,21 @@ img {
         }
     }
     #preview_wrap {
-        // max-height: 100vh;
-        // max-height: calc(100vh - 80px);
         text-align: center;
         &.html_preview_full_screen_active {
             background: rgba(#fff, 0.5);
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             z-index: 100;
             width: 100%;
             height: 100%;
+            .html_preview_control {
+                position: static;
+            }
             .iframe_wrap {
+                overflow: auto;
+                margin-top: 40px;
                 width: 100%;
                 #html_preview {
                     box-shadow: 0px 0px 100px rgba(#000000, 0.5);
