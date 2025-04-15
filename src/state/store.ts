@@ -3,6 +3,7 @@ import filesReducer from "./files/filesSlice";
 import filesInputModalReducer from "./filesInputModal/filesInputModalSlice";
 import userInfoReducer from "./userInfo/userInfo";
 import sessionsListReducer from "./sessionsList/sessionsList";
+import templateReducer from "./pickedTemplate/pickedTemplate";
 
 export const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
         filesInputModal: filesInputModalReducer,
         userInfo: userInfoReducer,
         sessionsList: sessionsListReducer,
+        pickedTemplate: templateReducer,
     },
 });
 

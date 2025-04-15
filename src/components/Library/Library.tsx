@@ -3,6 +3,9 @@ import { getDocs, collection } from "firebase/firestore";
 import { storage, auth } from "../../firebase";
 
 import { db } from '../../firebase'
+import { setTemplate, removeTemplate } from "../../state/pickedTemplate/pickedTemplate";
+import { setCurrentPreview } from '../../state/sessionsList/sessionsList';
+import { useDispatch } from "react-redux";
 import './styles.scss';
 
 
@@ -11,6 +14,7 @@ interface LibraryProps {
     setModalOpen: (open: boolean) => void;
 }
 type LibraryItem ={
+    id: string,
     title: string,
     image: string,
     html: string,
@@ -19,21 +23,19 @@ type LibraryItem ={
 const Library = ({modalOpen, setModalOpen}:LibraryProps) => {
     const [libraryListState, setLibraryListState] = useState <LibraryItem[]>([])
 
+    const dispatch = useDispatch();
     useEffect(()=> {
         getLibrary();
     }, []);
     const getLibrary = async () => {
-        // console.log(localStorage.getItem('library'))
-        // // if (localStorage.getItem('library')) {
-            
-        // // }
+        
         const libraryDocs = await getDocs(collection(db, "library"));
     
         let libraryList:any[] = [];
 
         libraryDocs.forEach((doc) => {
-            // console.log(doc.data());
-            libraryList.push(doc.data());
+
+            libraryList.push({id: doc.id, ...doc.data()});
         });
         setLibraryListState(libraryList)
         // localStorage.setItem('library', JSON.stringify(libraryList));
@@ -45,39 +47,16 @@ const Library = ({modalOpen, setModalOpen}:LibraryProps) => {
                 {
                     libraryListState.map((item, i) => {
                         return (
-                            <button key={i} className='library_card button_no_style'>
-                                <img src={item.image} alt={` ${item.title}`} />
-                                <p>{item.title}</p>
-                            </button>
-                            
-                        )
-                    })
-                }
-                {
-                    libraryListState.map((item, i) => {
-                        return (
-                            <button key={i} className='library_card button_no_style'>
-                                <img src={item.image} alt={` ${item.title}`} />
-                                <p>{item.title}</p>
-                            </button>
-                            
-                        )
-                    })
-                }
-                {
-                    libraryListState.map((item, i) => {
-                        return (
-                            <button key={i} className='library_card button_no_style'>
-                                <img src={item.image} alt={` ${item.title}`} />
-                                <p>{item.title}</p>
-                            </button>
-                        )
-                    })
-                }
-                {
-                    libraryListState.map((item, i) => {
-                        return (
-                            <button key={i} className='library_card button_no_style'>
+                            <button 
+                                key={i} 
+                                onClick={(e) => {dispatch(setTemplate({
+                                        html: item.html, 
+                                        id: item.id, 
+                                        image: item.image, 
+                                        title: item.title})); 
+                                    setModalOpen(false); 
+                                    dispatch(setCurrentPreview(item.html))}}
+                                className='library_card button_no_style'>
                                 <img src={item.image} alt={` ${item.title}`} />
                                 <p>{item.title}</p>
                             </button>

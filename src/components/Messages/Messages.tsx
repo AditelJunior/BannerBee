@@ -4,6 +4,7 @@ import { ChatItem } from "../../../types/types";
 
 import { FaUser, FaHtml5 } from "react-icons/fa";
 import { setCurrentPreview } from "../../state/sessionsList/sessionsList";
+
 import { useDispatch } from "react-redux";
 import { auth } from "../../firebase";
 
@@ -38,10 +39,12 @@ const Messages = (props:any) => {
                             <span className="files_list">{message.parts[0].files.map((file:any, id:number) => {
                                     return <span key={id}>{file.name}</span>
                         })}</span> : null}
+                        {message.parts[0].referenceTemplate?.html ?
+                            <span className="referenced_html">Reference: <button onClick={()=> dispatch(setCurrentPreview(message.parts[0].referenceTemplate?.html || ''))} className="html_chat_button">{message.parts[0].referenceTemplate.title}</button></span> : null}
                     </div> :
                     <div className="model_msg_wrap">
                         <p className="chat-msg-text" dangerouslySetInnerHTML={{ __html: message.parts[0].text }}></p> 
-                        {message.parts[0].html && message.parts[0].html.length ? <button onClick={()=>dispatch(setCurrentPreview(message.parts[0].html))} className="html_chat_button">HTML <FaHtml5/></button> : null}  
+                        {message.parts[0].html && message.parts[0].html.length ? <button onClick={()=>dispatch(setCurrentPreview(message.parts[0].html || ''))} className="html_chat_button">HTML <FaHtml5/></button> : null}  
                     </div>
                 }
             </div>

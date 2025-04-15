@@ -6,6 +6,7 @@ import { doc, setDoc, getDocs, collection, deleteDoc } from "firebase/firestore"
 import { db } from "../../firebase";
 import { useSelector, useDispatch } from "react-redux";
 import { setSessions, setCurrentSessionId, updateSession, setCurrentPreview, removeSession } from "../../state/sessionsList/sessionsList";
+import { removeTemplate } from "../../state/pickedTemplate/pickedTemplate";
 import { RootState } from "../../state/store";
 
 import { Link } from "react-router";
@@ -15,14 +16,14 @@ import Preview from "./../../components/Preview/Preview";
 import Library from "./../../components/Library/Library";
 import FileInputModal from "./../../components/FileInputModal/FileInputModal";
 
-import { ChatItem, File, Session } from "../../../types/types";
+import { ChatItem, File, Session, Template } from "../../../types/types";
 import { useHomeContext } from '../../context/HomeContext';
 
 import BeeImg from './../../images/bee.jpg';
 
 import HoneyBeeImg from './../../images/honeybee.png';
 
-import { FaUser, FaArrowLeft, FaArrowRight, FaTrashAlt, FaHtml5, FaFolder } from "react-icons/fa";
+import { FaUser, FaArrowLeft, FaArrowRight, FaTrashAlt, FaHtml5, FaFolder, FaTimes } from "react-icons/fa";
 
 import "./styles.scss";
 
@@ -30,10 +31,13 @@ const Home = () => {
    const [queryText, setQueryText] = useState<string>('');
    const [disableSending, setDisableSending] = useState<boolean>(false)
    const [libraryIsOpen, setLibraryIsOpen] = useState<boolean>(false)
+
    const {inputFiles, setInputFiles} = useHomeContext();
+   
    const sessions = useSelector((state:RootState) => state.sessionsList.sessions);
    const currentSession = useSelector((state:RootState) => state.sessionsList.currentSessionId);
    const currentPreview = useSelector((state:RootState) => state.sessionsList.currentPreview);
+   const currentTemplate = useSelector((state:RootState) => state.pickedTemplate);
    
    const sessionName = useRef<string>(`session_${Date.now()}-${Math.round(Math.random()*100)}`);
    const messagesEndRef = useRef(null);
@@ -118,6 +122,7 @@ const Home = () => {
                  parts: [{
                          text: parsedMsgUser.text,
                          files: parsedMsgUser.files,
+                         referenceTemplate: parsedMsgUser.referenceTemplate,
                      },],
              };
          }
@@ -202,7 +207,10 @@ const Home = () => {
          height: file.size.height,
          url: file.url,
      }));
-      let textPartUser = { text: query, files: jsonFiles};
+      let textPartUser = { text: query, files: jsonFiles, referenceTemplate: currentTemplate };
+
+      dispatch(removeTemplate());
+
       setChatHistory((prev:ChatItem[])=> [
          ...prev,
          { role: "user", parts: [textPartUser] },
@@ -371,7 +379,7 @@ const Home = () => {
                      { 
                         chatHistory !== null 
                            ? <Messages chatHistory={chatHistory}/> 
-                           : null 
+                           : null
                      }
                      {
                      // LOADER 
@@ -402,9 +410,15 @@ const Home = () => {
                         placeholder="Type your request here..." 
                         onKeyDown={(e:any)=> (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) ? (e.preventDefault(), aiResponse()) : null } 
                         onChange={(e)=> (textAreaHandler(e))} />
-                        
+                     { currentTemplate.title ? 
+                        <button
+                           onClick={()=> {dispatch(removeTemplate())}}
+                           className="reference_thumb button_no_style">
+                           <img src={currentTemplate.image} alt="reference" />
+                           <span className="remove_reference"><FaTimes/></span> 
+                        </button> : null}
                      <button disabled={disableSending} className="button_no_style send_button" onClick={()=> aiResponse()}><span>➤</span></button>
-                     {/* <button className="button_no_style send_button" onClick={()=> setLibraryIsOpen(true)}><FaFolder/></button> */}
+                     <button className="button_no_style send_button" onClick={()=> setLibraryIsOpen(true)}><FaFolder/></button>
                      <span className="developed_by">Developed by: <a href="https://www.linkedin.com/in/adilet-aitmatov/" target="_blank">Adilet Aitmatov</a></span>
                   </div>
                </div>
