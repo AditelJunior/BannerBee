@@ -30,7 +30,8 @@
     }
     .library_list {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-start;
+        gap: 1%;
         flex-wrap: wrap;
         .library_card {
             width: 32%;
