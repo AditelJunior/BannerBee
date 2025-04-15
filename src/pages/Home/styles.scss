@@ -216,8 +216,9 @@ img {
         box-sizing: border-box;
         position: relative;
         display: flex;
+        overflow: auto;
         justify-content: center;
-        width: fit-content;
+        width: 100%;
         min-height: 500px;
         height: 100%;
         margin-top: 40px;
@@ -228,7 +229,6 @@ img {
         }
     }
     #preview_wrap {
-        overflow: auto;
         // max-height: 100vh;
         // max-height: calc(100vh - 80px);
         text-align: center;
@@ -613,6 +613,8 @@ img {
         justify-content: center;
         align-items: center;
         svg {
+            width: 35px;
+            height: 35px;
             color: #fff;
         }
     }

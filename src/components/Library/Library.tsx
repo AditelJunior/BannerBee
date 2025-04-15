@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { getDocs, collection } from "firebase/firestore";
-import { storage, auth } from "../../firebase";
 
 import { db } from '../../firebase'
 import { setTemplate, removeTemplate } from "../../state/pickedTemplate/pickedTemplate";
