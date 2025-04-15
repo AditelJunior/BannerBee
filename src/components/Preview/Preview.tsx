@@ -7,7 +7,6 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
 import * as htmlToImage from 'html-to-image';
-import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image';
 
 import { File } from "../../../types/types";
 import './styles.scss';
