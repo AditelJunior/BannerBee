@@ -137,7 +137,7 @@ const Preview = ({html, allUploadedFiles, sessionName}: PreviewProps) => {
                     <button className="preview_control_button button_no_style" disabled={html ? false : true} onClick={(e)=>{e.stopPropagation(); fullScreeHtmlPreview()}}>Enter Full Screen</button>
                 }
             </div>
-            {!html ? <span>HTML is not generated yet</span> : null}
+            {!html ? <span className="preview_not_generated_label">HTML is not generated yet</span> : null}
             <div className="iframe_wrap">
                 <iframe 
                     onClick={(e)=> e.preventDefault()} 
