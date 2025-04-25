@@ -2,42 +2,44 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const genAI = new GoogleGenerativeAI("AIzaSyAtDPQTc0jSpp3W8iQPwzMSZO4SYSJojQI");
 const template = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=&&WIDTH_OF_THE_BANNER&&, initial-scale=1.0">
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=&&WIDTH_OF_THE_BANNER&&, initial-scale=1.0">
 
-    <title>&&TITLE&&</title>
-    <meta name="ad.size" content="width=&&WIDTH_OF_THE_BANNER&&,height=&&HEIGHT_OF_THE_BANNER&&">
-    <style id="ai_styles">
-        /* AI GENERATED CSS */
-        html,body {
-            margin: 0;
-            padding: 0;
-        }
-        .banner {
-            width: &&WIDTH_OF_THE_BANNER&&;
-            height: &&HEIGHT_OF_THE_BANNER&&;
-            position: relative;
-            iverflow: hidden;
-        }
-    </style>
-    <script type="text/javascript">
-        var clickTag = "http://www.google.com";
-    </script>
-</head>
-<body>
-<a href="javascript:window.open(window.clickTag)">
-    <div class="banner">
-        <!-- GENERATED STRUCTURE -->
-    </div>
-</a>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script type="text/javascript" id="ai_javascript">
-// AI GENERATED JS CODE
-</script>
-</body>
-</html>`
+                        <title>&&TITLE&&</title>
+                        <meta name="ad.size" content="width=&&WIDTH_OF_THE_BANNER&&,height=&&HEIGHT_OF_THE_BANNER&&">
+                        <style id="ai_styles">
+                            /* AI GENERATED CSS */
+                            html,body {
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .banner {
+                                width: &&WIDTH_OF_THE_BANNER&&;
+                                height: &&HEIGHT_OF_THE_BANNER&&;
+                                position: relative;
+                                iverflow: hidden;
+                            }
+                        </style>
+                        <script type="text/javascript">
+                            var clickTag = "http://www.google.com";
+                        </script>
+                    </head>
+                    <body>
+                        <a href="javascript:window.open(window.clickTag)">
+                            <div class="banner">
+                                <!-- GENERATED STRUCTURE -->
+                            </div>
+                        </a>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+                        <script type="text/javascript" id="ai_javascript">
+                        // AI GENERATED JS CODE
+                        </script>
+                    </body>
+                </html>`
+
+const responsiveCode = "<script>function resizeBanner(){const e=window.innerWidth,n=window.innerHeight,t=document.querySelector('.banner'),i=t.offsetWidth,s=t.offsetHeight,o=e/i,r=Math.min(n,s)/s,a=Math.min(o,r);t.style.transform=`scale(${a})`,t.style.transformOrigin='top left';const d=(e-i*a)/2,l=(n-s*a)/2;t.style.position='absolute',t.style.left=`${d}px`,t.style.top=`${l}px`}window.addEventListener('load',resizeBanner),window.addEventListener('resize',resizeBanner);</script>";
 
 const rules ='You have to use links you received in the html;\n' +
             "Use images provided by user. Dont look for images in internet. If you need an image placeholder create html shape and add text that describes it. For example you need to show user a moon. You can create a circle and write inside: 'Moon';\n" +
@@ -59,10 +61,11 @@ const rules ='You have to use links you received in the html;\n' +
             "Try to avoid adding images through css, put it in css only if needed. In normal situtation use img tag" +
             // "Whole html must be wrapped by '```html' and in the end: '```' \n" +
             "If you want to send the link add attribute target='_blank to that link, do not apply this rule to clickTag'\n" +
-            "If user is giving poor explanation and didnt send you any instructions on CTA you can add CTA to the banner and some marketing slogans apearing\n";
+            "If user is giving poor explanation and didnt send you any instructions on CTA you can add CTA to the banner and some marketing slogans apearing\n" +
+            "If user wants to have resizeable/responsive banner add this code to the end of the html: " + responsiveCode + "\n";
 
 
-export const model = genAI.getGenerativeModel({ 
+export const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     systemInstruction: "Your Name is BannerBee, you are html banner generator. Your tools are: HTML, CSS, JS and GSAP. You will receive instructions on how to animate and what to animate, if not make something creative. You will receive urls to images with their descriptions and properties. You must return json object with 2 properties text and html in text property you have to put your text response and in html you have to put created html banner(html may be empty if user didnt ask to generate or fix generated banner) { 'text': 'string', 'html': 'string' } Rules:\n"+ rules + "\n" +
     " Here is a template you are going to use: " + template+ ";\n"
