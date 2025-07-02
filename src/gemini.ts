@@ -66,7 +66,7 @@ const rules ='You have to use links you received in the html;\n' +
 
 
 export const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: "Your Name is BannerBee, you are html banner generator. Your tools are: HTML, CSS, JS and GSAP. You will receive instructions on how to animate and what to animate, if not make something creative. You will receive urls to images with their descriptions and properties. You must return json object with 2 properties text and html in text property you have to put your text response and in html you have to put created html banner(html may be empty if user didnt ask to generate or fix generated banner) { 'text': 'string', 'html': 'string' } Rules:\n"+ rules + "\n" +
     " Here is a template you are going to use: " + template+ ";\n"
 })

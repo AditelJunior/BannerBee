@@ -1,0 +1,12 @@
+@import url("../../styles/colors.scss");
+
+.switch_backup_wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    input {
+        width: 30px;
+        height: 30px;
+
+    }
+}
